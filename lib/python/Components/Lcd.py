@@ -135,7 +135,7 @@ class LCD:
 				f = open("/proc/stb/lcd/symbol_usb", "w")
 				f.write("0")
 				f.close()
-				
+
 	def setPower(self, value):
 		if fileExists("/proc/stb/power/vfd"):
 			print 'setLCDPower',value
@@ -146,7 +146,7 @@ class LCD:
 			print 'setLCDPower',value
 			f = open("/proc/stb/lcd/vfd", "w")
 			f.write(value)
-			f.close()		
+			f.close()
 
 	def setShowoutputresolution(self, value):
 		if fileExists("/proc/stb/lcd/show_outputresolution"):
@@ -197,7 +197,7 @@ def standbyCounterChanged(configElement):
 	config.lcd.ledbrightnessdeepstandby.apply()
 
 def InitLcd():
-	if getBoxType() in ('amikomini', 'dynaspark', 'amiko8900', 'sognorevolution', 'arguspingulux', 'arguspinguluxmini', 'arguspinguluxplus', 'sparkreloaded', 'sabsolo', 'sparklx', 'gis8120', 'gb800se', 'gb800solo', 'gb800seplus', 'gbultrase', 'gbipbox', 'tmsingle', 'tmnano2super', 'iqonios300hd', 'iqonios300hdv2', 'optimussos1plus', 'optimussos1', 'vusolo', 'et4x00', 'et5x00', 'et6x00', 'et7000', 'mixosf7', 'mixoslumi', 'axodin'):
+	if getBoxType() in ('mbmicro', 'beyonwizt2', 'wetekplay', 'axodinc', 'axodin', 'amikomini', 'dynaspark', 'amiko8900', 'sognorevolution', 'arguspingulux', 'arguspinguluxmini', 'arguspinguluxplus', 'sparkreloaded', 'sabsolo', 'sparklx', 'gis8120', 'gb800se', 'gb800solo', 'gb800seplus', 'gbultrase', 'gbipbox', 'tmsingle', 'tmnano2super', 'iqonios300hd', 'iqonios300hdv2', 'optimussos1plus', 'optimussos1', 'vusolo', 'et4x00', 'et5x00', 'et6x00', 'et7000', 'mixosf7', 'mixoslumi', 'gbx1', 'gbx3'):
 		detected = False
 	else:
 		detected = eDBoxLCD.getInstance().detected()
@@ -212,14 +212,6 @@ def InitLcd():
 		can_lcdmodechecking = False
 	SystemInfo["LCDMiniTV"] = can_lcdmodechecking
 
-	if SystemInfo["StandbyLED"]:
-		def standbyLEDChanged(configElement):
-			file = open("/proc/stb/power/standbyled", "w")
-			file.write(configElement.value and "on" or "off")
-			file.close()
-		config.usage.standbyLED = ConfigYesNo(default = True)
-		config.usage.standbyLED.addNotifier(standbyLEDChanged)
-	
 	if detected:
 		if can_lcdmodechecking:
 			def setLCDModeMinitTV(configElement):
@@ -288,7 +280,7 @@ def InitLcd():
 
 		def setLCDmode(configElement):
 			ilcd.setMode(configElement.value);
-			
+
 		def setLCDpower(configElement):
 			ilcd.setPower(configElement.value);
 
@@ -322,6 +314,15 @@ def InitLcd():
 		def setLEDblinkingtime(configElement):
 			ilcd.setLEDBlinkingTime(configElement.value);
 
+		def setPowerLEDstanbystate(configElement):
+			if fileExists("/proc/stb/power/standbyled"):
+				f = open("/proc/stb/power/standbyled", "w")
+				f.write(configElement.value)
+				f.close()
+
+		config.usage.lcd_standbypowerled = ConfigSelection(default = "on", choices = [("off", _("Off")), ("on", _("On"))])
+		config.usage.lcd_standbypowerled.addNotifier(setPowerLEDstanbystate)
+
 		standby_default = 0
 
 		ilcd = LCD()
@@ -333,7 +334,7 @@ def InitLcd():
 			config.lcd.contrast = ConfigNothing()
 			standby_default = 1
 
-		if getBoxType() in ('mixosf5', 'mixosf5mini', 'gi9196m', 'gi9196lite'):
+		if getBoxType() in ('mixosf5', 'mixosf5mini', 'gi9196m', 'gi9196lite', 'zgemmas2s', 'zgemmash1', 'zgemmash2'):
 			config.lcd.standby = ConfigSlider(default=standby_default, limits=(0, 4))
 			config.lcd.bright = ConfigSlider(default=4, limits=(0, 4))
 		else:
@@ -350,15 +351,15 @@ def InitLcd():
 
 		config.lcd.flip = ConfigYesNo(default=False)
 		config.lcd.flip.addNotifier(setLCDflipped);
-		
-		if getBoxType() in ('mixosf5', 'mixosf5mini', 'gi9196m', 'gi9196lite'):
+
+		if getBoxType() in ('mixosf5', 'mixosf5mini', 'gi9196m', 'gi9196lite', 'zgemmas2s', 'gi9196lite', 'zgemmash1', 'zgemmash2'):
 			config.lcd.scrollspeed = ConfigSlider(default = 150, increment = 10, limits = (0, 500))
 			config.lcd.scrollspeed.addNotifier(setLCDscrollspeed);
 			config.lcd.repeat = ConfigSelection([("0", _("None")), ("1", _("1X")), ("2", _("2X")), ("3", _("3X")), ("4", _("4X")), ("500", _("Continues"))], "3")
 			config.lcd.repeat.addNotifier(setLCDrepeat);
 			config.lcd.hdd = ConfigNothing()
 			config.lcd.mode = ConfigNothing()
-		elif fileExists("/proc/stb/lcd/scroll_delay") and not getBoxType() in ('ixussone', 'ixusszero'):
+		elif fileExists("/proc/stb/lcd/scroll_delay") and getBoxType() not in ('ixussone', 'ixusszero'):
 			config.lcd.hdd = ConfigSelection([("0", _("No")), ("1", _("Yes"))], "1")
 			config.lcd.scrollspeed = ConfigSlider(default = 150, increment = 10, limits = (0, 500))
 			config.lcd.scrollspeed.addNotifier(setLCDscrollspeed);
@@ -371,7 +372,7 @@ def InitLcd():
 			config.lcd.repeat = ConfigNothing()
 			config.lcd.scrollspeed = ConfigNothing()
 			config.lcd.hdd = ConfigNothing()
-			
+
 		if fileExists("/proc/stb/power/vfd") or fileExists("/proc/stb/lcd/vfd"):
 			config.lcd.power = ConfigSelection([("0", _("No")), ("1", _("Yes"))], "1")
 			config.lcd.power.addNotifier(setLCDpower);
