@@ -39,6 +39,7 @@ static int recordingBufferCount = determineBufferCount();
 #include <lib/dvb/demux.h>
 #include <lib/dvb/esection.h>
 #include <lib/dvb/decoder.h>
+#include <lib/dvb/amldecoder.h>
 
 eDVBDemux::eDVBDemux(int adapter, int demux):
 	adapter(adapter),
@@ -79,7 +80,14 @@ RESULT eDVBDemux::setSourceFrontend(int fenum)
 	int n = DMX_SOURCE_FRONT0 + fenum;
 	int res = ::ioctl(fd, DMX_SET_SOURCE, &n);
 	if (res)
+	{ // gg
 		eDebug("DMX_SET_SOURCE failed! - %m");
+		/** FIXME: gg begin dirty hack  */
+		eDebug("Ignoring due to limitation to one frontend for each adapter and missing ioctl....");
+		source = fenum;
+		res = 0;
+		/** FIXME: gg end dirty hack  */
+	} // gg
 	else
 		source = fenum;
 	::close(fd);
@@ -125,7 +133,16 @@ RESULT eDVBDemux::createTSRecorder(ePtr<iDVBTSRecorder> &recorder, int packetsiz
 
 RESULT eDVBDemux::getMPEGDecoder(ePtr<iTSMPEGDecoder> &decoder, int index)
 {
-	decoder = new eTSMPEGDecoder(this, index);
+	eDebug("%s() BOXTYPE: %s",__func__,BOXTYPE);
+	if(0 == strcmp(BOXTYPE,"wetekplay"))
+	{
+		eDebug("%s() wetekplay detected",__func__);
+		decoder = new eAMLTSMPEGDecoder(this, index);
+	}
+	else
+	{
+		decoder = new eTSMPEGDecoder(this, index);
+	}
 	return 0;
 }
 

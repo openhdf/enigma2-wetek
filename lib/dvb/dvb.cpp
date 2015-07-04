@@ -144,14 +144,20 @@ eDVBResourceManager::eDVBResourceManager()
 		m_boxtype = GIGABLUE;
 	else if (!strncmp(tmp, "gbultraue\n", rd))
 		m_boxtype = GIGABLUE;
+	else if (!strncmp(tmp, "gbx1\n", rd))
+		m_boxtype = GIGABLUE;
+	else if (!strncmp(tmp, "gbx3\n", rd))
+		m_boxtype = GIGABLUE;
 	else if (!strncmp(tmp, "ebox5000\n", rd))
 		m_boxtype = DM800;
 	else if (!strncmp(tmp, "ebox5100\n", rd))
 		m_boxtype = DM800;
 	else if (!strncmp(tmp, "eboxlumi\n", rd))
-		m_boxtype = DM800;		
+		m_boxtype = DM800;
 	else if (!strncmp(tmp, "ebox7358\n", rd))
-		m_boxtype = DM800SE;		
+		m_boxtype = DM800SE;
+	else if (!strncmp(tmp, "wetekplay\n", rd))
+		m_boxtype = WETEKPLAY;
 	else {
 		eDebug("boxtype detection via /proc/stb/info not possible... use fallback via demux count!\n");
 		if (m_demux.size() == 3)
@@ -1114,7 +1120,7 @@ RESULT eDVBResourceManager::allocateChannel(const eDVBChannelID &channelid, eUse
 	if (!simulate && m_cached_channel)
 	{
 		eDVBChannel *cache_chan = (eDVBChannel*)&(*m_cached_channel);
-		if(channelid==cache_chan->getChannelID())
+		if((m_boxtype != WETEKPLAY) && (channelid==cache_chan->getChannelID()))
 		{
 			eDebug("use cached_channel");
 			channel = m_cached_channel;
