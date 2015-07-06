@@ -52,6 +52,8 @@ enigma2_LDADD = \
 	@PTHREAD_LIBS@ \
 	@PYTHON_LDFLAGS@ \
 	@LIBDDVD_LIBS@ \
+	@AMLPLAYER_LIBS@ \
+	@DVBCSA_LIBS@ \
 	-ltuxtxt -ltuxtxt32bpp -lcrypt -lrt -ldl
 
 if ENABLE_SH
