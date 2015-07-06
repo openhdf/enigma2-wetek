@@ -315,6 +315,7 @@ RESULT eDVBSatelliteEquipmentControl::prepareRFmagicCSS(iDVBFrontend &frontend, 
 	unsigned int positions = lnb_param.SatCR_positions ? lnb_param.SatCR_positions : 1;
 	unsigned int posnum = (lnb_param.SatCR_positionnumber > 0)										// position == 0 -> use first position
 				&& (lnb_param.SatCR_positionnumber <= MAX_EN50607_POSITIONS) ?  (lnb_param.SatCR_positionnumber - 1) % positions : 0;
+
 	tuningword = (((roundMulti(vco - lnb_param.SatCRvco - 100000, 1000)/1000)&0x07FF)<<8)
 			| (band & 0x3)						//Bit0:HighLow  Bit1:VertHor
 			| (posnum << 2)						//position number (0..63)
@@ -342,6 +343,7 @@ RESULT eDVBSatelliteEquipmentControl::prepareSTelectronicSatCR(iDVBFrontend &fro
 				&& (lnb_param.SatCR_positionnumber <= MAX_FIXED_LNB_POSITIONS) 				// rotor with unicablelnb -> use only position A
 				&& (lnb_param.SatCR_positions == 2)							// has only one position -> use only position A
 				&& ((lnb_param.SatCR_positionnumber - 1) % positions) ?  1 : 0;				// odd numbers use position A; even numbers use position B
+
 	tuningword = ((vco - 1400000)/4000)
 			|(posnum << 12)
 			|((band & 3) <<10)
@@ -362,7 +364,7 @@ RESULT eDVBSatelliteEquipmentControl::prepareSTelectronicSatCR(iDVBFrontend &fro
 
 /**
  * @brief prepare for tune
- * 
+ *
  * @param frontend reference tu current frontend
  * @param sat reference to current sattelite parameters
  * @param frequency reference to tuner frequency. Initial value is ignored, committing new frequency on tuner
