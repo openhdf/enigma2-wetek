@@ -17,9 +17,6 @@ import ServiceReference
 from Screens.InfoBar import InfoBar, MoviePlayer
 from boxbranding import getBoxType, getBrandOEM
 
-#if SystemInfo["isGBIPBOX"]:
-#	from gbipbox import ZAP
-
 # TODO: remove pNavgation, eNavigation and rewrite this stuff in python.
 class Navigation:
 	def __init__(self, nextRecordTimerAfterEventActionAuto=False, nextPowerManagerAfterEventActionAuto=False):

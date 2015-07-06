@@ -5,7 +5,6 @@ from Components.About import about
 from Components.Harddisk import harddiskmanager
 from config import ConfigSubsection, ConfigYesNo, config, ConfigSelection, ConfigText, ConfigNumber, ConfigSet, ConfigLocations, NoSave, ConfigClock, ConfigInteger, ConfigBoolean, ConfigPassword, ConfigIP, ConfigSlider, ConfigSelectionNumber
 from Tools.Directories import resolveFilename, SCOPE_HDD, SCOPE_TIMESHIFT, SCOPE_AUTORECORD, SCOPE_SYSETC, defaultRecordingLocation, fileExists
-from boxbranding import getBoxType, getMachineBuild, getMachineName, getBrandOEM
 from Components.NimManager import nimmanager
 from Components.ServiceList import refreshServiceList
 from SystemInfo import SystemInfo
@@ -13,10 +12,7 @@ from Tools.HardwareInfo import HardwareInfo
 
 def InitUsageConfig():
 	config.misc.useNTPminutes = ConfigSelection(default = "30", choices = [("30", "30" + " " +_("minutes")), ("60", _("Hour")), ("1440", _("Once per day"))])
-	if getBrandOEM() in ('vuplus', 'ini'):
-		config.misc.remotecontrol_text_support = ConfigYesNo(default = True)
-	else:
-		config.misc.remotecontrol_text_support = ConfigYesNo(default = False)
+	config.misc.remotecontrol_text_support = ConfigYesNo(default = False)
 
 	config.workaround = ConfigSubsection()
 	config.workaround.deeprecord = ConfigYesNo(default = False)
@@ -473,10 +469,7 @@ def InitUsageConfig():
 	config.network = ConfigSubsection()
 	if SystemInfo["WakeOnLAN"]:
 		def wakeOnLANChanged(configElement):
-			if getBoxType() in ('et10000', 'gbquadplus', 'gbquad', 'gb800ueplus', 'gb800seplus', 'gbultraue', 'gbultrase', 'gbipbox', 'quadbox2400', 'mutant2400', 'et7x00', 'et7000', 'et7500', 'et8500'):
-				open(SystemInfo["WakeOnLAN"], "w").write(configElement.value and "on" or "off")
-			else:
-				open(SystemInfo["WakeOnLAN"], "w").write(configElement.value and "enable" or "disable")
+			open(SystemInfo["WakeOnLAN"], "w").write(configElement.value and "enable" or "disable")
 		config.network.wol = ConfigYesNo(default = False)
 		config.network.wol.addNotifier(wakeOnLANChanged)
 	config.network.AFP_autostart = ConfigYesNo(default = False)
