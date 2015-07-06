@@ -157,6 +157,7 @@ void bsodFatal(const char *component)
 	FILE *f;
 	const char* crashlog_name;
 	std::ostringstream os;
+	std::ostringstream os_text;
 	os << getConfigString("config.crash.debug_path", "/home/root/logs/");
 	os << "enigma2_crash_";
 	os << time(0);
