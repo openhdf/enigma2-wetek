@@ -310,8 +310,6 @@ private:
 	bool m_use_chapter_entries;
 	/* CVR needed for user requested media pause */
 	bool m_user_paused;
-	/* last used seek position gst-1 only */
-	gint64 m_last_seek_pos;
 #endif
 	bufferInfo m_bufferInfo;
 	errorInfo m_errorInfo;
@@ -326,33 +324,6 @@ private:
 	GstElement *m_gst_playbin, *audioSink, *videoSink;
 	GstTagList *m_stream_tags;
 
-	class GstMessageContainer: public iObject
-	{
-		DECLARE_REF(GstMessageContainer);
-		GstMessage *messagePointer;
-		GstPad *messagePad;
-		GstBuffer *messageBuffer;
-		int messageType;
-
-	public:
-		GstMessageContainer(int type, GstMessage *msg, GstPad *pad, GstBuffer *buffer)
-		{
-			messagePointer = msg;
-			messagePad = pad;
-			messageBuffer = buffer;
-			messageType = type;
-		}
-		~GstMessageContainer()
-		{
-			if (messagePointer) gst_message_unref(messagePointer);
-			if (messagePad) gst_object_unref(messagePad);
-			if (messageBuffer) gst_buffer_unref(messageBuffer);
-		}
-		int getType() { return messageType; }
-		operator GstMessage *() { return messagePointer; }
-		operator GstPad *() { return messagePad; }
-		operator GstBuffer *() { return messageBuffer; }
-	};
 	eFixedMessagePump<ePtr<GstMessageContainer> > m_pump;
 
 	audiotype_t gstCheckAudioPad(GstStructure* structure);
@@ -368,6 +339,8 @@ private:
 #if GST_VERSION_MAJOR < 1
 	static gint match_sinktype(GstElement *element, gpointer type);
 #else
+/* TOC processing CVR */
+	void HandleTocEntry(GstMessage *msg);
 	static gint match_sinktype(const GValue *velement, const gchar *type);
 #endif
 	static void handleElementAdded(GstBin *bin, GstElement *element, gpointer user_data);
