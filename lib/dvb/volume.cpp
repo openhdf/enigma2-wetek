@@ -45,7 +45,7 @@ int eDVBVolumecontrol::openMixer()
 	if (!mainVolume)
 	{
 		int err;
-		char *card = "hw:0";
+		char *card = "default";
 
 		/* Perform the necessary pre-amble to start up ALSA Mixer */
 		err = snd_mixer_open(&alsaMixerHandle, 0);
@@ -82,8 +82,8 @@ int eDVBVolumecontrol::openMixer()
 		/* Set up Decoder 0 as the main volume control. */
 		snd_mixer_selem_id_t *sid;
 		snd_mixer_selem_id_alloca(&sid);
+		snd_mixer_selem_id_set_name(sid, ALSA_VOLUME_MIXER);
 		snd_mixer_selem_id_set_index(sid, 0);
-		snd_mixer_selem_id_set_name(sid, "Master");
 		mainVolume = snd_mixer_find_selem(alsaMixerHandle, sid);
 	}
 	return mainVolume ? 0 : -1;
