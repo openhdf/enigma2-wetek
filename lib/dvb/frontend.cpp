@@ -707,6 +707,8 @@ void eDVBFrontend::feEvent(int w)
 {
 	eDVBFrontend *sec_fe = this;
 	long tmp = m_data[LINKED_PREV_PTR];
+	if (w < 0)
+		return;
 	while (tmp != -1)
 	{
 		eDVBRegisteredFrontend *linked_fe = (eDVBRegisteredFrontend*)tmp;
@@ -718,18 +720,25 @@ void eDVBFrontend::feEvent(int w)
 		dvb_frontend_event event;
 		int res;
 		int state;
-		res = ::ioctl(m_fd, FE_GET_EVENT, &event);
-
-		if (res && (errno == EAGAIN))
+		if((res = ::ioctl(m_fd, FE_READ_STATUS, &event.status)) != 0)
+		{
 			break;
+		}
 
-		if (w < 0)
-			continue;
-
-		eDebug("(%d)fe event: status %x, inversion %s, m_tuning %d", m_dvbid, event.status, (event.parameters.inversion == INVERSION_ON) ? "on" : "off", m_tuning);
+		else
+		{
+			if(event.status == 0)
+			{
+				break;
+			}
+		}
+		usleep(10000);
 		if (event.status & FE_HAS_LOCK)
 		{
 			state = stateLock;
+			/* FIXME: gg this because FE_READ_STATUS always returns */
+			if(m_state == state)
+				break; /* I do not see any other way out */
 		}
 		else
 		{

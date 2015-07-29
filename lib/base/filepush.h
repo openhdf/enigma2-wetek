@@ -69,7 +69,7 @@ private:
 class eFilePushThreadRecorder: public eThread, public Object
 {
 public:
-	eFilePushThreadRecorder(unsigned char* buffer, size_t buffersize=188*1024);
+	eFilePushThreadRecorder(unsigned char* buffer, size_t buffersize=10*188*1024);
 	void thread();
 	void stop();
 	void start(int sourcefd);

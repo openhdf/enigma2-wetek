@@ -46,6 +46,7 @@ private:
 	friend class eDVBTSRecorder;
 	friend class eDVBCAService;
 	friend class eTSMPEGDecoder;
+	friend class eAMLTSMPEGDecoder;
 	Signal1<void, int> m_event;
 
 	int openDemux(void);
