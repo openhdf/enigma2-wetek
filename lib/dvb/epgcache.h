@@ -329,6 +329,7 @@ private:
 #endif
 	void sectionRead(const uint8_t *data, int source, channel_data *channel);
 	void gotMessage(const Message &message);
+	void flushEPG(const uniqueEPGKey & s=uniqueEPGKey());
 	void cleanLoop();
 
 // called from main thread
@@ -349,7 +350,6 @@ public:
 	void save();
 	void load();
 	void timeUpdated();
-	void flushEPG(const uniqueEPGKey & s=uniqueEPGKey());
 #ifndef SWIG
 	eEPGCache();
 	~eEPGCache();
@@ -384,7 +384,6 @@ public:
 	RESULT lookupEventId(const eServiceReference &service, int event_id, const eit_event_struct *&);
 	RESULT lookupEventTime(const eServiceReference &service, time_t , const eit_event_struct *&, int direction=0);
 	RESULT getNextTimeEntry(const eit_event_struct *&);
-	RESULT saveEventToFile(const char* filename, const eServiceReference &service, int eit_event_id, time_t begTime, time_t endTime);
 
 public:
 	// Event's are parsed epg events.. it's safe to use them after cache unlock
