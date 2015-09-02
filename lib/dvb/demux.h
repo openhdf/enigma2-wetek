@@ -37,6 +37,7 @@ private:
 	int adapter, demux, source;
 
 	int m_dvr_busy;
+	int m_pvr_fd;
 	friend class eDVBSectionReader;
 	friend class eDVBPESReader;
 	friend class eDVBAudio;

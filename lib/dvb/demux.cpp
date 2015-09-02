@@ -45,7 +45,8 @@ eDVBDemux::eDVBDemux(int adapter, int demux):
 	adapter(adapter),
 	demux(demux),
 	source(-1),
-	m_dvr_busy(0)
+	m_dvr_busy(0),
+	m_pvr_fd(0)
 {
 }
 
@@ -67,7 +68,8 @@ int eDVBDemux::openDVR(int flags)
 #else
 	char filename[32];
 	snprintf(filename, sizeof(filename), "/dev/dvb/adapter%d/dvr%d", adapter, demux);
-	return ::open(filename, flags);
+	m_pvr_fd = ::open(filename, flags);
+	return m_pvr_fd;
 #endif
 }
 
