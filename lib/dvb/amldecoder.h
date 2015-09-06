@@ -51,6 +51,7 @@ private:
 		changeState = 16,
 	};
 	int m_changed, m_decoder;
+	int m_radio_pic_on;
 	int m_state;
 	int m_ff_sm_ratio;
 	bool m_has_audio;
