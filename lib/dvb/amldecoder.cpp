@@ -351,8 +351,8 @@ RESULT eAMLTSMPEGDecoder::play()
 			m_codec.audio_info.valid = 0;
 			m_codec.stream_type = STREAM_TYPE_TS;
 
-			/* Tell the kernel on which adapter we want H/W CSA */
-			setStbSource(m_demux ? m_demux->adapter : 0);
+			/* Tell the kernel on which adapter we want H/W CSA and LiveTV */
+			setStbSource(m_demux ? m_demux->getSource() : 0);
 
 			int ret = codec_init(&m_codec);
 			if(ret != CODEC_ERROR_NONE)
@@ -430,7 +430,7 @@ RESULT eAMLTSMPEGDecoder::pause()
 				{
 					if (m_demux && m_demux->m_pvr_fd)
 						::ioctl(m_demux->m_pvr_fd, PVR_P0);
-
+									
 					codec_pause(&m_codec);
 					m_state = statePause;
 					return 0;

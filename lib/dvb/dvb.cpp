@@ -984,6 +984,45 @@ RESULT eDVBResourceManager::allocateDemux(eDVBRegisteredFrontend *fe, ePtr<eDVBA
 			}
 		}
 	}
+	else if (m_boxtype == WETEKPLAY)
+	{	
+		int n=0;
+		iDVBAdapter *adapter = fe ? fe->m_adapter : m_adapter.begin(); /* look for a demux on the same adapter as the frontend, or the first adapter for dvr playback */
+		int source = fe ? fe->m_frontend->getDVBID() : -1;
+		cap |= capHoldDecodeReference; // this is checked in eDVBChannel::getDemux
+		
+		for (; i != m_demux.end(); ++i, ++n)
+		{
+			if (fe)
+			{
+				if (!i->m_inuse && ((n == 0 && source == 0) ||
+					(n == 1 && source == 1)))
+				{				
+					if (!unused) 
+					{
+						unused = i;
+						break;
+					}					
+				}				
+				else if(i->m_adapter == adapter && 
+					i->m_demux->getSource() == source)
+				{
+					demux = new eDVBAllocatedDemux(i);
+					return 0;
+				}	
+		    }			
+			else if (n == (m_demux.size() - 1)) // always use last demux for PVR 
+			{
+				if (i->m_inuse)
+				{
+					demux = new eDVBAllocatedDemux(i);
+					return 0;
+				}
+				unused = i;
+				break;
+			}		    
+		}	
+	}
 	else
 	{
 		iDVBAdapter *adapter = fe ? fe->m_adapter : m_adapter.begin(); /* look for a demux on the same adapter as the frontend, or the first adapter for dvr playback */
