@@ -80,10 +80,15 @@ class AVSwitch:
 	# if modes.has_key("DVI-PC") and not getModeList("DVI-PC"):
 	# 	print "remove DVI-PC because of not existing modes"
 	# 	del modes["DVI-PC"]
-	if modes.has_key("YPbPr") and getBoxType() in ('osmini', 'wetekplay', 'gbx1', 'gbx3', 'sf3038', 'spycat', 'bwidowx', 'bwidowx2', 'fegasusx5', 'force2', 'force2plus', 'optimussos', 'tmnanose', 'tmnanocombo', 'zgemmash1', 'zgemmash2', 'zgemmas2s', 'zgemmass', 'mago', 'enibox', 'sf108', 'x1plus', 'xcombo', 'mutant1100', 'mutant1200', 'mutant500c', 'et4x00', 'et7500', 'et7000', 'et8500', 'et8500s', 'xp1000mk', 'xp1000max', 'xp1000plus', 'sf8', 'tm2t', 'tmsingle', 'vusolo2', 'tmnano', 'iqonios300hd', 'iqonios300hdv2', 'classm', 'axodin', 'axodinc', 'genius', 'evo', 'galaxym6', 'geniuse3hd', 'evoe3hd', 'axase3', 'axase3c', 'dm500hdv2', 'dm500hd', 'dm800', 'mixosf7', 'mixoslumi', 'mixosf5mini', 'gi9196lite', 'ixusszero', 'optimussos1', 'enfinity', 'marvel1', 'bre2ze', 'sezam1000hd', 'mbmini', 'atemio5x00', 'xpeedlx1', 'xpeedlx2', 'vusolose', 'gbipbox', 'formuler3', 'optimussos3plus', 'force1plus', 'vuzero', 'vizyonvita') or (about.getModelString() == 'ini-3000'):
+	if modes.has_key("YPbPr") and getBoxType() in ('t2cable', 'xpeedlxcs2', 'xpeedlxcc', 'osmini', 'wetekplay', 'gbx1', 'gbx3', 'sf3038', 'spycat', 'bwidowx', 'bwidowx2', 'fegasusx5', 'fegasusx5s', 'fegasusx5t', 'force2', 'force2plus', 'optimussos', 'tmnanose', 'tmnanocombo', 'zgemmash1', 'zgemmash2', 'zgemmas2s', 'zgemmass', 'mago', 'enibox', 'sf108', 'x1plus', 'xcombo', 'mutant1100', 'mutant1200', 'mutant500c', 'et4x00', 'et7500', 'et7000', 'et8500', 'et8500s', 'xp1000mk', 'xp1000max', 'xp1000plus', 'sf8', 'tm2t', 'tmsingle', 'vusolo2', 'tmnano', 'iqonios300hd', 'iqonios300hdv2', 'classm', 'axodin', 'axodinc', 'genius', 'evo', 'galaxym6', 'geniuse3hd', 'evoe3hd', 'axase3', 'axase3c', 'dm500hdv2', 'dm500hd', 'dm800', 'mixosf7', 'mixoslumi', 'mixosf5mini', 'gi9196lite', 'ixusszero', 'optimussos1', 'enfinity', 'marvel1', 'bre2ze', 'sezam1000hd', 'mbmini', 'atemio5x00', 'xpeedlx1', 'xpeedlx2', 'vusolose', 'gbipbox', 'formuler3', 'optimussos3plus', 'force1plus', 'vuzero', 'vizyonvita') or (about.getModelString() == 'ini-3000'):
 		del modes["YPbPr"]
-	if modes.has_key("Scart") and getBoxType() in ('osmini', 'wetekplay', 'force2', 'force2plus', 'optimussos', 'tmnanose', 'tmnanosecombo', 'gbx1', 'gbx3'):
+	if modes.has_key("Scart") and getBoxType() in ('fusionhd', 'wetekplay', 'force2', 'force2plus', 'optimussos', 'tmnanose', 'tmnanosecombo', 'gbx1', 'gbx3'):
 		del modes["Scart"]
+		
+	if getBoxType() in ('mutant2400'):
+		f = open("/proc/stb/info/board_revision", "r").read()
+		if f >= "2":
+			del modes["YPbPr"]
 
 	def __init__(self):
 		self.last_modes_preferred =  [ ]
@@ -260,6 +265,8 @@ class AVSwitch:
 			self.current_port = config.av.videoport.value
 		if self.current_port in ("YPbPr", "Scart-YPbPr"):
 			eAVSwitch.getInstance().setColorFormat(3)
+		elif self.current_port in ("RCA"):
+			eAVSwitch.getInstance().setColorFormat(0)
 		else:
 			eAVSwitch.getInstance().setColorFormat(value)
 
@@ -463,6 +470,8 @@ def InitAVSwitch():
 	def setColorFormat(configElement):
 		if config.av.videoport and config.av.videoport.value in ("YPbPr", "Scart-YPbPr"):
 			iAVSwitch.setColorFormat(3)
+		elif config.av.videoport and config.av.videoport.value in ("RCA"):
+			iAVSwitch.setColorFormat(0)
 		else:
 			if getBoxType() == 'et6x00':
 				map = {"cvbs": 3, "rgb": 3, "svideo": 2, "yuv": 3}	
@@ -478,7 +487,7 @@ def InitAVSwitch():
 		iAVSwitch.setAspectRatio(map[configElement.value])
 	
 	iAVSwitch.setInput("ENCODER") # init on startup
-	if (getBoxType() in ('gbquad', 'gbquadplus', 'et5x00', 'ixussone', 'ixusszero', 'axodin', 'axodinc', 'starsatlx', 'galaxym6', 'geniuse3hd', 'evoe3hd', 'axase3', 'axase3c', 'omtimussos1', 'omtimussos2', 'gb800seplus', 'gb800ueplus', 'gbultrase', 'gbultraue'  )) or about.getModelString() == 'et6000':
+	if (getBoxType() in ('gbquad', 'gbquadplus', 'et5x00', 'ixussone', 'ixusszero', 'axodin', 'axodinc', 'starsatlx', 'galaxym6', 'geniuse3hd', 'evoe3hd', 'axase3', 'axase3c', 'omtimussos1', 'omtimussos2', 'gb800seplus', 'gb800ueplus', 'gbultrase', 'gbultraue' , 'twinboxlcd' )) or about.getModelString() == 'et6000':
 		detected = False
 	else:
 		detected = eAVSwitch.getInstance().haveScartSwitch()
