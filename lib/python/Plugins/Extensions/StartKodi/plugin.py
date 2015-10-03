@@ -19,7 +19,7 @@ from Plugins.Extensions.StartKodi.installsomething import InstallSomething
 
 class StartKodi(Screen):
 
-	kodi_name = "kodi-amlogic"
+	kodi_name = "wetek-kodi"
 	kodineeds = 200             # TODO: check real needs, more likely to be ~ 300MB
 	caninstall = False
 	isinstalled = False
