@@ -566,7 +566,7 @@ def runScreenTest():
 	profile("Init:PowerKey")
 	power = PowerKey(session)
 
-	if boxtype in ('odinm9', 'et7500', 'ventonhdx', 'maram9', 'ixussone', 'ixussone'):
+	if boxtype in ('sf3038', 'spycat', 'e4hd', 'e4hdc', 'mbmicro', 'et7500', 'mixosf5', 'mixosf7', 'mixoslumi', 'gi9196m', 'maram9', 'ixussone', 'ixussone', 'uniboxhd1', 'uniboxhd2', 'uniboxhd3', 'sezam5000hd', 'mbtwin', 'sezam1000hd', 'mbmini', 'atemio5x00', 'beyonwizt3') or getBrandOEM() in ('fulan'):
 		profile("VFDSYMBOLS")
 		import Components.VfdSymbols
 		Components.VfdSymbols.SymbolsCheck(session)
@@ -585,7 +585,7 @@ def runScreenTest():
 	profile("RunReactor")
 	profile_final()
 
-	if boxtype in ('sf8', 'classm', 'axodin', 'axodinc', 'starsatlx', 'odinm7', 'odinm6', 'xp1000s'):
+	if boxtype in ('sf8', 'classm', 'axodin', 'axodinc', 'starsatlx', 'genius', 'evo'):
 		f = open("/dev/dbox/oled0", "w")
 		f.write('-E2-')
 		f.close()
@@ -602,6 +602,7 @@ def runScreenTest():
 	config.usage.shutdownOK.save()
 	configfile.save()
 
+	os.system("killall -9 showiframe")
 	runReactor()
 
 	print "[mytest.py] normal shutdown"
@@ -639,23 +640,24 @@ def runScreenTest():
 	tmp = plugins.getNextWakeupTime(getPluginIdent = True)
 	nextPluginTime = tmp[0]
 	nextPluginIdent = tmp[1] #"pluginname | pluginfolder"
+	tmp = tmp[1].lower()
 	#start in standby, depending on plugin type
-	if "EPGRefresh" in nextPluginIdent:
+	if "epgrefresh" in tmp:
 		nextPluginName = "EPGRefresh"
 		nextPluginTimeInStandby = 1
-	elif "vps" in nextPluginIdent or "VPS" in nextPluginIdent:
+	elif "vps" in tmp:
 		nextPluginName = "VPS"
 		nextPluginTimeInStandby = 1
-	elif "SerienRecorder" in nextPluginIdent or "serienrecorder" in nextPluginIdent:
+	elif "serienrecorder" in tmp:
 		nextPluginName = "SerienRecorder"
 		nextPluginTimeInStandby = 1
-	elif "Elektro" in nextPluginIdent:
+	elif "elektro" in tmp:
 		nextPluginName = "Elektro"
 		nextPluginTimeInStandby = 1
-	elif "MiniPowersave" in nextPluginIdent:
+	elif "minipowersave" in tmp:
 		nextPluginName = "MiniPowersave"
 		nextPluginTimeInStandby = 1
-	elif "EnhancedPowersave" in nextPluginIdent or "Enhanced Powersave" in nextPluginIdent:
+	elif "enhancedpowersave" in tmp:
 		nextPluginName = "EnhancedPowersave"
 		nextPluginTimeInStandby = 1
 	else:
@@ -696,24 +698,30 @@ def runScreenTest():
 			#when next record starts in 15 mins
 			if abs(nextRecordTime - startTime[0]) <= 900:
 				setStandby = forceNextRecord = 1
-			else:
-							forceNextRecord = 1
-		print "[mytest.py] set next wakeup type to '%s' %s" % ({0:"record-timer",1:"zap-timer",2:"power-timer",3:"plugin-timer"}[startTime[1]],{0:"and starts normal",1:"and starts in standby"}[setStandby])
+			#by vps-plugin
+			elif startTime[1] == 3 and nextPluginName == "VPS":
+				setStandby = forceNextRecord = 1
+
+		if startTime[1] == 3:
+			nextPluginName = " (%s)" % nextPluginName
+		else:
+			nextPluginName = ""
+		print "[mytest.py] set next wakeup type to '%s'%s %s" % ({0:"record-timer",1:"zap-timer",2:"power-timer",3:"plugin-timer"}[startTime[1]], nextPluginName, {0:"and starts normal",1:"and starts in standby"}[setStandby])
 		if forceNextRecord:
-			print "[mytest.py] timer is set from 'vps-plugin' or just before a 'record-timer' starts, set 'record-timer' wakeup flag"
+			print "[mytest.py] set from 'vps-plugin' or just before a 'record-timer' starts, set 'record-timer' wakeup flag"
 		print "[mytest.py] set next wakeup time to", strftime("%a, %Y/%m/%d %H:%M:%S", localtime(wptime))
 		#set next wakeup
 		setFPWakeuptime(wptime)
 		#set next standby only after shutdown in deep standby
-		#print Screens.Standby.quitMainloopCode
 		if Screens.Standby.quitMainloopCode != 1:
-			setStandby = 2 # 0=no standby, but get in standby if wakeup to timer start > 60 sec, 1=standby, 2=no standby, when before was not in deep-standby
+			setStandby = 2 # 0=no standby, but get in standby if wakeup to timer start > 60 sec (not for plugin-timer, here is no standby), 1=standby, 2=no standby, when before was not in deep-standby
 		config.misc.nextWakeup.value = "%d,%d,%d,%d,%d,%d" % (wptime,startTime[0],startTime[1],setStandby,nextRecordTime,forceNextRecord)
 	else:
+		config.misc.nextWakeup.value = "-1,-1,0,0,-1,0"
+		setFPWakeuptime(int(nowTime) - 3600) #minus one hour -> overwrite old wakeup time
 		print "[mytest.py] no set next wakeup time"
 	config.misc.nextWakeup.save()
 	print "="*100
-	config.misc.nextWakeup.save()
 
 	profile("stopService")
 	session.nav.stopService()
