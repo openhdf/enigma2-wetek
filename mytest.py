@@ -668,7 +668,6 @@ def runScreenTest():
 					(nextZapTime, 1, nextZapTimeInStandby),
 					(nextPowerTime, 2, nextPowerTimeInStandby),
 					(nextPluginTime, 3, nextPluginTimeInStandby))
-		#if x[0] != -1 and x[0] >= nowTime - 60 #no startTime[0] in the past (e.g. vps-plugin -> if current time between 'recordtimer begin - vps initial time' is startTime in the past ...)
 		if x[0] != -1
 	]
 	wakeupList.sort()
@@ -682,7 +681,7 @@ def runScreenTest():
 	else:
 		wpoffset = int(config.workaround.wakeuptimeoffset.value)
 
-	config.misc.nextWakeup.value = "-1,-1,0,0,-1,0"
+	print "="*100
 	if wakeupList and wakeupList[0][0] > 0:
 		startTime = wakeupList[0]
 		# wakeup time is 5 min before timer starts + offset
@@ -690,22 +689,15 @@ def runScreenTest():
 		if (wptime - nowTime) < 120: # no time to switch box back on
 			wptime = int(nowTime) + 120  # so switch back on in 120 seconds
 
+		#check for plugin-, zap- or power-timer to enable the 'forced' record-timer wakeup
 		forceNextRecord = 0
-		if startTime[1] != 0 and nextRecordTime > 0:
-			#check for plugin-, zap- or power-timer to enable the forced record-timer wakeup - when next record starts in 15 mins
-			if abs(nextRecordTime - startTime[0]) <= 900:
-				forceNextRecord = 1
-			else:
-			#check for vps-plugin to enable the record-timer wakeup
-				try:
-					if config.plugins.vps.allow_wakeup.value:
-						if startTime[0] + config.plugins.vps.initial_time.value * 60 == nextRecordTime \
-						or startTime[0] - 20 + config.plugins.vps.initial_time.value * 60 == nextRecordTime: #vps using begin time, not start prepare time
-							forceNextRecord = 1
-				except:
-					pass
 		setStandby = startTime[2]
-		print "="*100
+		if startTime[1] != 0 and nextRecordTime > 0:
+			#when next record starts in 15 mins
+			if abs(nextRecordTime - startTime[0]) <= 900:
+				setStandby = forceNextRecord = 1
+			else:
+							forceNextRecord = 1
 		print "[mytest.py] set next wakeup type to '%s' %s" % ({0:"record-timer",1:"zap-timer",2:"power-timer",3:"plugin-timer"}[startTime[1]],{0:"and starts normal",1:"and starts in standby"}[setStandby])
 		if forceNextRecord:
 			print "[mytest.py] timer is set from 'vps-plugin' or just before a 'record-timer' starts, set 'record-timer' wakeup flag"
@@ -719,6 +711,7 @@ def runScreenTest():
 		config.misc.nextWakeup.value = "%d,%d,%d,%d,%d,%d" % (wptime,startTime[0],startTime[1],setStandby,nextRecordTime,forceNextRecord)
 	else:
 		print "[mytest.py] no set next wakeup time"
+	config.misc.nextWakeup.save()
 	print "="*100
 	config.misc.nextWakeup.save()
 
