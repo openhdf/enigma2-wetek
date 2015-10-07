@@ -50,6 +50,14 @@ extern "C" {
 
 #define TRACE__ eDebug("%s(%d): ",__PRETTY_FUNCTION__,__LINE__);
 
+
+#define PVR_P0                _IO('o', 100)
+#define PVR_P1                _IO('o', 101)
+#define PVR_P2                _IO('o', 102)
+#define PVR_P3                _IO('o', 103)
+#define PVR_P4                _IOR('o', 104, int)
+
+
 static void signal_handler(int x)
 {
 	TRACE__;
@@ -70,6 +78,7 @@ eAMLTSMPEGDecoder::eAMLTSMPEGDecoder(eDVBDemux *demux, int decoder)
 		m_demux->connectEvent(slot(*this, &eAMLTSMPEGDecoder::demux_event), m_demux_event_conn);
 	}
 	memset(&m_codec, 0, sizeof(codec_para_t ));
+	m_codec.handle = -1;
 	CONNECT(m_showSinglePicTimer->timeout, eAMLTSMPEGDecoder::finishShowSinglePic);
 	CONNECT(m_VideoRead->timeout, eAMLTSMPEGDecoder::parseVideoInfo);
 	m_VideoRead->start(500, false);
@@ -172,13 +181,14 @@ RESULT eAMLTSMPEGDecoder::setVideoPID(int vpid, int type)
 
 RESULT eAMLTSMPEGDecoder::setAudioPID(int apid, int type)
 {
-	TRACE__
+	TRACE__			
 	/* do not set an audio pid on decoders without audio support */
 	if ((m_apid != apid) || (m_atype != type))
 	{
 		m_changed |= changeAudio;
 		m_atype = type;
 		m_apid = apid;
+				
 		m_codec.audio_type = AFORMAT_MPEG;
 		switch (type)
 		{
@@ -205,6 +215,75 @@ RESULT eAMLTSMPEGDecoder::setAudioPID(int apid, int type)
 
 		}
 		eDebug("%s() apid=%d, type=%d",__PRETTY_FUNCTION__, apid, type);
+		
+		if (m_codec.handle > -1) 
+		{	
+		
+			if (m_demux && m_demux->m_pvr_fd)
+			{
+				osdBlank("/sys/class/video/blackout_policy", 0);
+				
+				::ioctl(m_demux->m_pvr_fd, PVR_P0);
+							
+				codec_close(&m_codec);
+				m_codec.handle = -1;	
+			
+				::ioctl(m_demux->m_pvr_fd, PVR_P1);							
+				::ioctl(m_demux->m_pvr_fd, PVR_P2);				
+											
+				m_codec.has_audio = 1;			
+				m_codec.audio_pid = apid;
+				m_codec.audio_channels = 2;
+				m_codec.audio_samplerate = 48000;
+				m_codec.audio_info.channels = 2;
+				m_codec.audio_info.sample_rate = m_codec.audio_samplerate;
+				m_codec.switch_audio_flag = 1;
+				m_codec.audio_info.valid = 0;
+				m_codec.stream_type = STREAM_TYPE_TS;
+				
+				if ((m_vpid >= 0) && (m_vpid < 0x1FFF)) {
+					m_codec.has_video = 1;
+					m_codec.video_pid = m_vpid;
+					osdBlank("/sys/class/video/blackout_policy", 1);		
+				}
+				
+				codec_init(&m_codec);
+				setAvsyncEnable(1);	
+		
+				::ioctl(m_demux->m_pvr_fd, PVR_P3);
+			
+			}
+			else
+			{						
+				 /* automute */
+				codec_audio_automute(m_codec.adec_priv, 1);			
+				/* close audio */
+				codec_close_audio(&m_codec);			
+				/* first set an invalid audio pid */
+				m_codec.audio_pid = 0xffff;			
+				codec_set_audio_pid(&m_codec);	
+				
+				
+				 /* reinit audio info */
+				m_codec.has_audio = 1;			
+				m_codec.audio_pid = apid;
+				m_codec.audio_channels = 2;
+				m_codec.audio_samplerate = 48000;
+				m_codec.audio_info.channels = 2;
+				m_codec.audio_info.sample_rate = m_codec.audio_samplerate;
+				m_codec.switch_audio_flag = 1;
+				m_codec.audio_info.valid = 0;
+				
+				codec_audio_reinit(&m_codec);
+				
+				/* reset audio */
+				codec_reset_audio(&m_codec);			
+				 /* resume audio */
+				codec_resume_audio(&m_codec, 1);
+				/* unmute*/
+				codec_audio_automute(m_codec.adec_priv, 0);	
+			}
+		}
 	}
 	return 0;
 }
@@ -372,12 +451,6 @@ RESULT eAMLTSMPEGDecoder::play()
 		}
 	}
 	else if (m_state == statePause) {
-
-#define PVR_P0                _IO('o', 100)
-#define PVR_P1                _IO('o', 101)
-#define PVR_P2                _IO('o', 102)
-#define PVR_P3                _IO('o', 103)
-#define PVR_P4                _IOR('o', 104, int)
 
 		if (m_codec.handle >= 0) {
 			codec_resume(&m_codec);
