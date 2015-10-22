@@ -12,16 +12,7 @@
 #define ANSI_BLUE    "\33[34m"
 #define ANSI_MAGENTA "\33[35m"
 #define ANSI_CYAN    "\33[36m"
-#define ANSI_WHITE   "\33[37m"
-//foreground bright color
-#define ANSI_BBLACK   "\33[90m"
-#define ANSI_BRED     "\33[91m"
-#define ANSI_BGREEN   "\33[92m"
-#define ANSI_BYELLOW  "\33[93m"
-#define ANSI_BBLUE    "\33[94m"	//do not use, because the contrast is bad
-#define ANSI_BMAGENTA "\33[95m"
-#define ANSI_BCYAN    "\33[96m"
-#define ANSI_BWHITE   "\33[97m"
+#define ANSI_WIHTE   "\33[37m"
 //background colors
 #define ANSI_bBLACK   "\33[40m"
 #define ANSI_bRED     "\33[41m"
