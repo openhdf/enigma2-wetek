@@ -692,6 +692,40 @@ error:
 
 void eAMLTSMPEGDecoder::parseVideoInfo()
 {
+
+	if (::access("/tmp/restart.audio", F_OK) >= 0) {
+		unlink("/tmp/restart.audio");
+		eDebug("Detected need for audio correction");
+		if (m_demux && !m_demux->m_pvr_fd) {
+			/* automute */
+			codec_audio_automute(m_codec.adec_priv, 1);	
+			/* close audio */
+			codec_close_audio(&m_codec);
+			/* first set an invalid audio pid */
+			m_codec.audio_pid = 0xffff;	
+			codec_set_audio_pid(&m_codec);
+
+
+			 /* reinit audio info */
+			m_codec.has_audio = 1;
+			m_codec.audio_pid = m_apid;
+			m_codec.audio_channels = 2;
+			m_codec.audio_samplerate = 48000;
+			m_codec.audio_info.channels = 2;
+			m_codec.audio_info.sample_rate = m_codec.audio_samplerate;
+			m_codec.switch_audio_flag = 1;
+			m_codec.audio_info.valid = 0;
+
+			codec_audio_reinit(&m_codec);
+
+			/* reset audio */
+			codec_reset_audio(&m_codec);
+			 /* resume audio */
+			codec_resume_audio(&m_codec, 1);
+			/* unmute*/
+			codec_audio_automute(m_codec.adec_priv, 0);	
+		}
+	}
 	if (m_width == -1 && m_height == -1)
 	{	
 		int x, y;
