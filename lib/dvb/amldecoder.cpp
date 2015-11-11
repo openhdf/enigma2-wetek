@@ -698,6 +698,7 @@ void eAMLTSMPEGDecoder::parseVideoInfo()
 		eDebug("Detected need for full audio correction");
 		if (m_demux && !m_demux->m_pvr_fd) {
 			codec_close(&m_codec);
+			setStbSource(m_demux ? m_demux->getSource() : 0);
 			codec_init(&m_codec);
 			setAvsyncEnable(1);
 		}
