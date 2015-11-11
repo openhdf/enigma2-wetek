@@ -697,8 +697,13 @@ void eAMLTSMPEGDecoder::parseVideoInfo()
 		unlink("/tmp/restart.audio1");
 		eDebug("Detected need for full audio correction");
 		if (m_demux && !m_demux->m_pvr_fd) {
+			if ((m_vpid >= 0) && (m_vpid < 0x1FFF))
+				osdBlank("/sys/class/video/blackout_policy", 0);
 			codec_close(&m_codec);
 			setStbSource(m_demux ? m_demux->getSource() : 0);
+			if ((m_vpid >= 0) && (m_vpid < 0x1FFF))
+				osdBlank("/sys/class/video/blackout_policy", 1);
+			usleep(50000);
 			codec_init(&m_codec);
 			setAvsyncEnable(1);
 		}
