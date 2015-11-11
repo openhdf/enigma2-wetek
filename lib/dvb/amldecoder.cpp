@@ -693,7 +693,16 @@ error:
 void eAMLTSMPEGDecoder::parseVideoInfo()
 {
 
-	if (::access("/tmp/restart.audio", F_OK) >= 0) {
+	if (::access("/tmp/restart.audio1", F_OK) >= 0) {
+		unlink("/tmp/restart.audio1");
+		eDebug("Detected need for full audio correction");
+		if (m_demux && !m_demux->m_pvr_fd) {
+			codec_close(&m_codec);
+			codec_init(&m_codec);
+			setAvsyncEnable(1);
+		}
+	}
+	else if (::access("/tmp/restart.audio", F_OK) >= 0) {
 		unlink("/tmp/restart.audio");
 		eDebug("Detected need for audio correction");
 		if (m_demux && !m_demux->m_pvr_fd) {
