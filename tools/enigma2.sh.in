@@ -18,15 +18,6 @@ if [ -e /usr/bin/kodi ]; then
 	fi
 fi
 
-#check kodi hdf keymap
-#use gen.xml for kodi addon keymap-editor
-if [ -f /media/uSDextra/.kodi/userdata/keymaps/gen.xml ]; then
-	echo "kodi hdf-wetek-keymap.xml found"
-else
-	cp @datadir@/enigma2/keymap-hdf-wetek.xml /media/uSDextra/.kodi/userdata/keymaps/gen.xml
-	echo "copy kodi hdf-wetek-keymap.xml to /media/uSDextra/.kodi/userdata/keymaps/"
-fi
-
 if [ -x @bindir@/showiframe ]; then
 	if [ -f @sysconfdir@/enigma2/bootlogo.mvi ]; then
 		echo found @sysconfdir@/enigma2/bootlogo.mvi
