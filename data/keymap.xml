@@ -1,6 +1,6 @@
 <!--suppress XmlUnboundNsPrefix -->
 <keymap>
-	<!-- "HDF Default Keymap 19.09.2015" -->
+	<!-- "HDF Default Keymap 23.09.2015" -->
 	<map context="ListboxActions">
 		<device name="keyboard">
 			<key id="a" mapto="up" flags="mr" />
@@ -910,6 +910,8 @@
 		<key id="KEY_EXIT" mapto="exit_long" flags="l" />
 		<key id="KEY_EPG" mapto="epg" flags="b" />
 		<key id="KEY_EPG" mapto="epg_long" flags="l" />
+		<key id="KEY_PVR" mapto="showMovies" flags="b" />
+		<key id="KEY_PVR" mapto="showMovies_long" flags="l" />
 		<key id="KEY_MEDIA" mapto="showMovies" flags="b" />
 		<key id="KEY_MEDIA" mapto="showMovies_long" flags="l" />
 		<key id="KEY_FILE" mapto="file" flags="b" />
