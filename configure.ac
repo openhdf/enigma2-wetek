@@ -361,7 +361,7 @@ if test "$BOXTYPE" == "wetekplay"; then
 	AC_DEFINE(WETEKRC, 1, [WetekPlay Remote-use BACKSPACE to toggle extended functions on numeric buttons])
 	AC_DEFINE(HAVE_ALSA, 1, [try with alsa])
 	PKG_CHECK_MODULES(ALSA, alsa)
-	PKG_CHECK_MODULES(AMLPLAYER, libamcodec)
+	PKG_CHECK_MODULES(AMLPLAYER, libamcodec libamadec)
 	PKG_CHECK_MODULES(DVBCSA, libdvbcsa)
 	ALSA_CFLAGS="-lasound"
 fi
