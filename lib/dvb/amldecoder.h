@@ -26,6 +26,9 @@
 // Amlogic includes
 extern "C" {
 #include <codec.h>
+#include <adec-external-ctrl.h>
+#define AMSTREAM_IOC_MAGIC  'S'
+#define AMSTREAM_IOC_PCRID        _IOW(AMSTREAM_IOC_MAGIC, 0x4f, int)
 }
 
 class eSocketNotifier;
@@ -42,6 +45,7 @@ private:
 	ePtr<eDVBDemux> m_demux;
 	int m_vpid, m_vtype, m_apid, m_atype, m_pcrpid, m_textpid;
 	int m_width, m_height, m_framerate, m_aspect, m_progressive;
+	int aml_fd;	
 	enum
 	{
 		changeVideo = 1,
@@ -75,8 +79,12 @@ private:
 
 	int osdBlank(char *path,int cmd);
 	int setAvsyncEnable(int enable);
-	int setStbSource(int source);
+	int setSyncMode(int mode);
+
 	codec_para_t m_codec;
+	dec_sysinfo_t am_sysinfo;
+	arm_audio_info am_param;
+	void *adec_handle;
 
 public:
 	enum { aMPEG, aAC3, aDTS, aAAC, aAACHE, aLPCM, aDTSHD, aDDP, MPEG2 = 0, MPEG4_H264, MPEG1, MPEG4_Part2, VC1, VC1_SM };

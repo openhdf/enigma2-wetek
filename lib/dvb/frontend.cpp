@@ -469,7 +469,7 @@ int eDVBFrontend::PreferredFrontendIndex = -1;
 eDVBFrontend::eDVBFrontend(const char *devicenodename, int fe, int &ok, bool simulate, eDVBFrontend *simulate_fe)
 	:m_simulate(simulate), m_enabled(false), m_simulate_fe(simulate_fe), m_dvbid(fe), m_slotid(fe)
 	,m_fd(-1), m_dvbversion(0), m_rotor_mode(false), m_need_rotor_workaround(false)
-	,m_state(stateClosed), m_timeout(0), m_tuneTimer(0)
+	,m_state(stateClosed), m_timeout(0), m_tuneTimer(0), m_fbc(false)
 {
 	m_filename = devicenodename;
 
@@ -483,6 +483,11 @@ eDVBFrontend::eDVBFrontend(const char *devicenodename, int fe, int &ok, bool sim
 		m_data[i] = -1;
 
 	m_idleInputpower[0]=m_idleInputpower[1]=0;
+
+	char fileName[32] = {0};
+	sprintf(fileName, "/proc/stb/frontend/%d/fbc_id", m_slotid);
+	if (access(fileName, F_OK) == 0)
+		m_fbc = true;
 
 	ok = !openFrontend();
 	closeFrontend();
@@ -1023,6 +1028,18 @@ void eDVBFrontend::calculateSignalQuality(int snr, int &signalquality, int &sign
 		if (!strcmp(m_description, "FTS-260 (Montage RS6000)"))
 			sat_max = 1490;
 	}
+	else if (!strcmp(m_description, "Si216x"))
+	{
+		eDVBFrontendParametersTerrestrial parm;
+		oparm.getDVBT(parm);
+		switch (parm.system)
+		{
+			case eDVBFrontendParametersTerrestrial::System_DVB_T:
+			case eDVBFrontendParametersTerrestrial::System_DVB_T2: 
+			case eDVBFrontendParametersTerrestrial::System_DVB_T_T2: ret = (int)((snr * 10) / 15); break;
+			default: break;
+		}
+	}
 
 	signalqualitydb = ret;
 	if (ret == 0x12345678) // no snr db calculation avail.. return untouched snr value..
@@ -1404,7 +1421,7 @@ int eDVBFrontend::tuneLoopInt()  // called by m_tuneTimer
 			case eSecCommand::SET_FRONTEND:
 			{
 				int enableEvents = (m_sec_sequence.current()++)->val;
-				eDebugNoSimulate("[SEC] setFrontend %d", enableEvents);
+				eDebugNoSimulate("[SEC] setFrontend: events %s", enableEvents ? "enabled":"disabled");
 				setFrontend(enableEvents);
 				break;
 			}
@@ -2016,16 +2033,17 @@ void eDVBFrontend::setFrontend(bool recvEvents)
 RESULT eDVBFrontend::prepare_sat(const eDVBFrontendParametersSatellite &feparm, unsigned int tunetimeout)
 {
 	int res;
-	satfrequency = feparm.frequency;
 	if (!m_sec)
 	{
 		eWarning("no SEC module active!");
 		return -ENOENT;
 	}
+	satfrequency = feparm.frequency;
 	res = m_sec->prepare(*this, feparm, satfrequency, 1 << m_slotid, tunetimeout);
 	if (!res)
 	{
-		eDebugNoSimulate("prepare_sat System %d Freq %d Pol %d SR %d INV %d FEC %d orbpos %d system %d modulation %d pilot %d, rolloff %d",
+		eDebugNoSimulate("frontend %d prepare_sat System %d Freq %d Pol %d SR %d INV %d FEC %d orbpos %d system %d modulation %d pilot %d, rolloff %d",
+			m_dvbid,
 			feparm.system,
 			feparm.frequency,
 			feparm.polarisation,
@@ -2050,7 +2068,13 @@ RESULT eDVBFrontend::prepare_sat(const eDVBFrontendParametersSatellite &feparm, 
 
 RESULT eDVBFrontend::prepare_cable(const eDVBFrontendParametersCable &feparm)
 {
-	eDebugNoSimulate("tuning to %d khz, sr %d, fec %d, modulation %d, inversion %d",
+	if (!m_sec)
+	{
+		eWarning("no SEC module active!");
+		return -ENOENT;
+	}
+	eDebugNoSimulate("frontend %d tuning dvb-c to %d khz, sr %d, fec %d, modulation %d, inversion %d",
+		m_dvbid,
 		feparm.frequency,
 		feparm.symbol_rate,
 		feparm.fec_inner,
@@ -2062,12 +2086,43 @@ RESULT eDVBFrontend::prepare_cable(const eDVBFrontendParametersCable &feparm)
 
 RESULT eDVBFrontend::prepare_terrestrial(const eDVBFrontendParametersTerrestrial &feparm)
 {
+	if (!m_sec)
+	{
+		eWarning("no SEC module active!");
+		return -ENOENT;
+	}
+	eDebugNoSimulate("frontend %d tuning dvb-t to %d khz, bandwidth %d, modulation %d, inversion %d",
+	m_dvbid,
+	feparm.frequency,
+	feparm.bandwidth,
+//	feparm.code_rate_HP,
+//	feparm.code_rate_LP,
+	feparm.modulation,
+//	feparm.transmission_mode,
+//	feparm.guard_interval,
+//	feparm.hierarchy,
+	feparm.inversion
+//	feparm.system,
+//	feparm.plpid,
+	);
 	oparm.setDVBT(feparm);
 	return 0;
 }
 
 RESULT eDVBFrontend::prepare_atsc(const eDVBFrontendParametersATSC &feparm)
 {
+	if (!m_sec)
+	{
+		eWarning("no SEC module active!");
+		return -ENOENT;
+	}
+	eDebugNoSimulate("frontend %d tuning atsc to %d khz, modulation %d, inversion %d",
+	m_dvbid,
+	feparm.frequency,
+	feparm.modulation,
+	feparm.inversion
+//	feparm.system;
+	);
 	oparm.setATSC(feparm);
 	return 0;
 }
