@@ -421,7 +421,6 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 #if GST_VERSION_MAJOR >= 1
 	m_use_chapter_entries = false; /* TOC chapter support CVR */
 #endif
-	m_useragent = "Enigma2 Mediaplayer";
 	m_extra_headers = "";
 	m_download_buffer_path = "";
 	m_prev_decoder_time = -1;
@@ -755,7 +754,24 @@ RESULT eServiceMP3::start()
 	if (m_gst_playbin)
 	{
 		// eDebug("eServiceMP3::starting pipeline");
-		gst_element_set_state (m_gst_playbin, GST_STATE_PAUSED);
+		GstStateChangeReturn ret;
+		ret = gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
+
+		switch(ret)
+		{
+		case GST_STATE_CHANGE_FAILURE:
+			eDebug("[eServiceMP3] failed to start pipeline");
+			stop();
+			break;
+		case GST_STATE_CHANGE_SUCCESS:
+			m_is_live = false;
+			break;
+		case GST_STATE_CHANGE_NO_PREROLL:
+			m_is_live = true;
+			break;
+		default:
+			break;
+		}
 	}
 
 	return 0;
@@ -775,19 +791,19 @@ RESULT eServiceMP3::stop()
 
 	eDebug("eServiceMP3::stop %s", m_ref.path.c_str());
 	m_state = stStopped;
-	
-       GstStateChangeReturn ret;
-       GstState state, pending;
-       /* make sure that last state change was successfull */
-       ret = gst_element_get_state(m_gst_playbin, &state, &pending, GST_CLOCK_TIME_NONE);
-       eDebug("[eServiceMP3] stop state:%s pending:%s ret:%s",
-               gst_element_state_get_name(state),
-               gst_element_state_get_name(pending),
-               gst_element_state_change_return_get_name(ret));
 
-       ret = gst_element_set_state(m_gst_playbin, GST_STATE_NULL);
-       if (ret != GST_STATE_CHANGE_SUCCESS)
-               eDebug("[eServiceMP3] stop GST_STATE_NULL failure");
+	GstStateChangeReturn ret;
+	GstState state, pending;
+	/* make sure that last state change was successfull */
+	ret = gst_element_get_state(m_gst_playbin, &state, &pending, 5 * GST_SECOND);
+	eDebug("[eServiceMP3] stop state:%s pending:%s ret:%s",
+		gst_element_state_get_name(state),
+		gst_element_state_get_name(pending),
+		gst_element_state_change_return_get_name(ret));
+
+	ret = gst_element_set_state(m_gst_playbin, GST_STATE_NULL);
+	if (ret != GST_STATE_CHANGE_SUCCESS)
+		eDebug("[eServiceMP3] stop GST_STATE_NULL failure");
 
 	saveCuesheet();
 	m_subtitles_paused = false;
@@ -844,7 +860,6 @@ RESULT eServiceMP3::unpause()
 
 	m_subtitles_paused = false;
 	m_subtitle_sync_timer->start(1, true);
-	
 	/* no need to unpase if we are not paused already */
 	if (m_currentTrickRatio == 1.0 && !m_paused)
 	{
@@ -1093,7 +1108,7 @@ RESULT eServiceMP3::isCurrentlySeekable()
 {
 	int ret = 3; /* just assume that seeking and fast/slow winding are possible */
 
-	if (!m_gst_playbin)
+	if (!m_gst_playbin || m_state != stRunning)
 		return 0;
 
 	return ret;
@@ -1672,7 +1687,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				}	break;
 				case GST_STATE_CHANGE_READY_TO_PAUSED:
 				{
-					gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
+					m_state = stRunning;
 #if GST_VERSION_MAJOR >= 1
 					GValue result = { 0, };
 #endif
