@@ -3,9 +3,8 @@ from boxbranding import getMachineBrand
 from enigma import ePicLoad, eTimer, getDesktop, gMainDC, eSize
 
 from Screens.Screen import Screen
-from Tools.Directories import resolveFilename, pathExists, SCOPE_MEDIA
-from Tools.HardwareInfo import HardwareInfo
-from Components.About import about
+from Tools.Directories import resolveFilename, pathExists, SCOPE_MEDIA, SCOPE_ACTIVE_SKIN
+
 from Components.Pixmap import Pixmap, MovingPixmap
 from Components.ActionMap import ActionMap
 from Components.Sources.StaticText import StaticText
@@ -14,6 +13,7 @@ from Components.AVSwitch import AVSwitch
 from Components.Sources.List import List
 from Components.ConfigList import ConfigListScreen
 from Components.config import config, ConfigSubsection, ConfigInteger, ConfigSelection, ConfigText, ConfigYesNo, getConfigListEntry
+import skin
 
 def getScale():
 	return AVSwitch().getFramebufferScale()
@@ -28,11 +28,6 @@ config.pic.infoline = ConfigYesNo(default=True)
 config.pic.loop = ConfigYesNo(default=True)
 config.pic.bgcolor = ConfigSelection(default="#00000000", choices = [("#00000000", _("black")),("#009eb9ff", _("blue")),("#00ff5a51", _("red")), ("#00ffe875", _("yellow")), ("#0038FF48", _("green"))])
 config.pic.textcolor = ConfigSelection(default="#0038FF48", choices = [("#00000000", _("black")),("#009eb9ff", _("blue")),("#00ff5a51", _("red")), ("#00ffe875", _("yellow")), ("#0038FF48", _("green"))])
-if getMachineBrand == 'Vu+':
-	choices = [(None, _("Same resolution as skin")), ("(720, 576)","720x576"), ("(1280, 720)", "1280x720")]
-else:
-	choices = [(None, _("Same resolution as skin")), ("(720, 576)","720x576"), ("(1280, 720)", "1280x720"), ("(1920, 1080)", "1920x1080")]
-config.pic.fullview_resolution = ConfigSelection(default = None, choices = choices)
 
 class picshow(Screen):
 	skin = """
@@ -138,9 +133,9 @@ class picshow(Screen):
 		del self.picload
 
 		if self.filelist.getCurrentDirectory() is None:
-			config.pic.lastDir.value = "/"
+			config.pic.lastDir.setValue("/")
 		else:
-			config.pic.lastDir.value = self.filelist.getCurrentDirectory()
+			config.pic.lastDir.setValue(self.filelist.getCurrentDirectory())
 
 		config.pic.save()
 		self.close()
@@ -151,6 +146,7 @@ class Pic_Setup(Screen, ConfigListScreen):
 
 	def __init__(self, session):
 		Screen.__init__(self, session)
+		self.setTitle(_("PicturePlayer"))
 		# for the skin: first try MediaPlayerSettings, then Setup, this allows individual skinning
 		self.skinName = ["PicturePlayerSetup", "Setup"]
 		self.setup_title = _("Settings")
@@ -182,7 +178,7 @@ class Pic_Setup(Screen, ConfigListScreen):
 			getConfigListEntry(_("Slide picture in loop"), config.pic.loop),
 			getConfigListEntry(_("Background color"), config.pic.bgcolor),
 			getConfigListEntry(_("Text color"), config.pic.textcolor),
-			getConfigListEntry(_("Fullview resolution"), config.pic.fullview_resolution),
+			getConfigListEntry(_("Fullview resolution"), config.usage.pic_resolution),
 		]
 		self["config"].list = setup_list
 		self["config"].l.setList(setup_list)
