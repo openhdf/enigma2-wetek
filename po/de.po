@@ -13083,3 +13083,18 @@ msgstr "Der Ausschalt-Timer wurde aktiviert."
 
 msgid "The sleep timer has been disabled."
 msgstr "Der Ausschalt-Timer wurde deaktiviert."
+
+msgid "Do you want to backup your image and settings before?"
+msgstr "Soll vorher ein Backup vom Image oder den Settings gemacht werden?"
+
+msgid "Backup your settings now?"
+msgstr "Sollen jetzt die Einstellungen gesichert werden?"
+
+msgid "Backup your image now?"
+msgstr "Soll jetzt ein komplettes Backup vom Image erstellt werden?"
+
+msgid "Animations"
+msgstr "Animationen"
+
+msgid "Animation Speed"
+msgstr "Animations Geschwindigkeit"
