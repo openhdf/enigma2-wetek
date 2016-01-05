@@ -405,6 +405,7 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 	m_subtitle_sync_timer = eTimer::create(eApp);
 	m_streamingsrc_timeout = 0;
 	m_stream_tags = 0;
+	m_bitrate = 0;
 	m_currentAudioStream = -1;
 	m_currentSubtitleStream = -1;
 	m_cachedSubtitleStream = 0; /* report the first subtitle stream to be 'cached'. TODO: use an actual cache. */
@@ -417,10 +418,8 @@ eServiceMP3::eServiceMP3(eServiceReference ref):
 	m_paused = false;
 	m_seek_paused = false;
 	m_cuesheet_loaded = false; /* cuesheet CVR */
-	m_user_paused = false;
 #if GST_VERSION_MAJOR >= 1
 	m_use_chapter_entries = false; /* TOC chapter support CVR */
-	m_last_seek_pos = 0; /* CVR last seek position */
 #endif
 	m_useragent = "Enigma2 Mediaplayer";
 	m_extra_headers = "";
@@ -756,24 +755,7 @@ RESULT eServiceMP3::start()
 	if (m_gst_playbin)
 	{
 		// eDebug("eServiceMP3::starting pipeline");
-		GstStateChangeReturn ret;
-		ret = gst_element_set_state (m_gst_playbin, GST_STATE_PAUSED);
-
-		switch(ret)
-		{
-		case GST_STATE_CHANGE_FAILURE:
-			eDebug("[eServiceMP3] failed to start pipeline");
-			stop();
-			break;
-		case GST_STATE_CHANGE_SUCCESS:
-			m_is_live = false;
-			break;
-		case GST_STATE_CHANGE_NO_PREROLL:
-			m_is_live = true;
-			break;
-		default:
-			break;
-		}
+		gst_element_set_state (m_gst_playbin, GST_STATE_PAUSED);
 	}
 
 	return 0;
@@ -793,19 +775,19 @@ RESULT eServiceMP3::stop()
 
 	eDebug("eServiceMP3::stop %s", m_ref.path.c_str());
 	m_state = stStopped;
+	
+       GstStateChangeReturn ret;
+       GstState state, pending;
+       /* make sure that last state change was successfull */
+       ret = gst_element_get_state(m_gst_playbin, &state, &pending, GST_CLOCK_TIME_NONE);
+       eDebug("[eServiceMP3] stop state:%s pending:%s ret:%s",
+               gst_element_state_get_name(state),
+               gst_element_state_get_name(pending),
+               gst_element_state_change_return_get_name(ret));
 
-	GstStateChangeReturn ret;
-	GstState state, pending;
-	/* make sure that last state change was successfull */
-	ret = gst_element_get_state(m_gst_playbin, &state, &pending, 5 * GST_SECOND);
-	eDebug("[eServiceMP3] stop state:%s pending:%s ret:%s",
-		gst_element_state_get_name(state),
-		gst_element_state_get_name(pending),
-		gst_element_state_change_return_get_name(ret));
-
-	ret = gst_element_set_state(m_gst_playbin, GST_STATE_NULL);
-	if (ret != GST_STATE_CHANGE_SUCCESS)
-		eDebug("[eServiceMP3] stop GST_STATE_NULL failure");
+       ret = gst_element_set_state(m_gst_playbin, GST_STATE_NULL);
+       if (ret != GST_STATE_CHANGE_SUCCESS)
+               eDebug("[eServiceMP3] stop GST_STATE_NULL failure");
 
 	saveCuesheet();
 	m_subtitles_paused = false;
@@ -862,6 +844,7 @@ RESULT eServiceMP3::unpause()
 
 	m_subtitles_paused = false;
 	m_subtitle_sync_timer->start(1, true);
+	
 	/* no need to unpase if we are not paused already */
 	if (m_currentTrickRatio == 1.0 && !m_paused)
 	{
@@ -1689,7 +1672,7 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				}	break;
 				case GST_STATE_CHANGE_READY_TO_PAUSED:
 				{
-					m_state = stRunning;
+					gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
 #if GST_VERSION_MAJOR >= 1
 					GValue result = { 0, };
 #endif
@@ -1770,7 +1753,6 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				{
 					if ( m_sourceinfo.is_streaming && m_streamingsrc_timeout )
 						m_streamingsrc_timeout->stop();
-					m_user_paused = false;
 					m_paused = false;
 					if (m_seek_paused)
 					{
@@ -1782,7 +1764,6 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				}	break;
 				case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
 				{
-					m_user_paused = true;
 					m_paused = true;
 				}	break;
 				case GST_STATE_CHANGE_PAUSED_TO_READY:
@@ -2038,8 +2019,6 @@ void eServiceMP3::gstBusCall(GstMessage *msg)
 				if (m_errorInfo.missing_codec.find("video/") == 0 || (m_errorInfo.missing_codec.find("audio/") == 0 && m_audioStreams.empty()))
 					m_event((iPlayableService*)this, evUser+12);
 			}
-			if(!m_user_paused)
-				gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
 			break;
 		}
 		case GST_MESSAGE_ELEMENT:
