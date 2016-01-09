@@ -9,7 +9,7 @@ from Plugins.Plugin import PluginDescriptor
 
 from enigma import setAnimation_current, setAnimation_speed
 
-# default = disabled
+# default = slide to left
 g_default = {
         "current": 6,
         "speed"  : 20,
