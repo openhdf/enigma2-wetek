@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: enigma2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-19 23:44+0100\n"
-"PO-Revision-Date: 2016-01-23 15:36+0100\n"
+"PO-Revision-Date: 2016-01-25 12:03+0100\n"
 "Last-Translator: Koivo <koivo@hdfreaks.cc>\n"
 "Language-Team: AndyBlacburn, j-ot&Trial\n"
 "Language: de\n"
@@ -2967,6 +2967,12 @@ msgstr "Schnitteditor..."
 msgid "execute cuts (requires MovieCut plugin)"
 msgstr "Filmschnitt ausführen (benötigt MovieCut Plugin)"
 
+msgid "Enable intro screen"
+msgstr "Begrüßungsbildschirm aktivieren"
+
+msgid "Disable intro screen"
+msgstr "Begrüßungsbildschirm abschalten"
+
 msgid "Czech"
 msgstr "Tchechisch"
 
@@ -5638,6 +5644,15 @@ msgctxt "now/next: 'next' event label"
 msgid "Next"
 msgstr "Demnächst"
 
+msgid "NOW"
+msgstr "Jetzt"
+
+msgid "NEXT"
+msgstr "Danach"
+
+msgid "MORE"
+msgstr "Später"
+
 msgid "No"
 msgstr "Nein"
 
@@ -6100,8 +6115,8 @@ msgstr "Andere"
 msgid "Output"
 msgstr "Ausgang"
 
-msgid "Overwrite configuration files?"
-msgstr "Ausgabe"
+msgid "Overwrite configuration files ?"
+msgstr "Überschreibe Konfigurationsdateien ?"
 
 msgid "Overwrite configuration files during software upgrade?"
 msgstr "Konfigurationsdateien beim Software-Update überschreiben ?"
@@ -6142,6 +6157,9 @@ msgid "Packet management"
 msgstr "Paketverwaltung"
 
 msgid "Packet Manager"
+msgstr "Paketverwaltung"
+
+msgid "Packet manager"
 msgstr "Paketverwaltung"
 
 msgid "PacketManager"
@@ -7927,6 +7945,12 @@ msgstr "Schärfe"
 
 msgid "Short filenames"
 msgstr "Kurze Dateinamen"
+
+msgid "Very short filenames"
+msgstr "Sehr kurze Dateinamen"
+
+msgid "Very very short filenames"
+msgstr "Sehr sehr kurze Dateinamen"
 
 msgid "Show /tmp/ecm.info"
 msgstr "Zeige /tmp/ecm.info"
@@ -12279,6 +12303,12 @@ msgstr "Überschreiben der Konfigurations Files ?"
 msgid "Overwrite Setting Files ?"
 msgstr "Settings-Dateien überschreiben ?"
 
+msgid "Save EPG Cache ?"
+msgstr "Speichere EPG Cache ?"
+
+msgid "Save epg cache before start the backup?"
+msgstr "Speichere EPG Cache vor dem Backup?"
+
 msgid "Overwrite Driver Files ?"
 msgstr "Treiber-Module überschreiben ?"
 
@@ -12906,6 +12936,12 @@ msgstr "Prov/Fav lang"
 
 msgid "Power long"
 msgstr "Power lang"
+
+msgid "Power (use button menu)"
+msgstr "Power (Tasten-Einstellungen)"
+
+msgid "Power long (use button menu)"
+msgstr "Power lang (Tasten-Einstellungen)"
 
 msgid "Power down"
 msgstr "Power losgelassen"
