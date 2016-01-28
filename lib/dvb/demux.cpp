@@ -46,7 +46,7 @@ eDVBDemux::eDVBDemux(int adapter, int demux):
 	demux(demux),
 	source(-1),
 	m_dvr_busy(0),
-	m_pvr_fd(0)
+	m_pvr_fd(-1)
 {
 }
 
