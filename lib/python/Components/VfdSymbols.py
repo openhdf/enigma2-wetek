@@ -6,14 +6,14 @@ from Tools.Directories import fileExists
 from Components.ParentalControl import parentalControl
 from Components.ServiceEventTracker import ServiceEventTracker
 from Components.SystemInfo import SystemInfo
-from boxbranding import getBoxType
+from boxbranding import getBoxType, getMachineBuild
 import Components.RecordingConfig
 
 POLLTIME = 5 # seconds
 
 def SymbolsCheck(session, **kwargs):
 		global symbolspoller, POLLTIME
-		if getBoxType() in ('ixussone', 'ixusszero', 'mbmicro', 'wetekplay'):
+		if getBoxType() in ('ixussone', 'ixusszero', 'mbmicro', 'e4hd', 'e4hdhybrid', 'wetekplay', 'wetekplayplus') or getMachineBuild() in ('dags7362' , 'dags5'):
 			POLLTIME = 1
 		symbolspoller = SymbolsCheckPoller(session)
 		symbolspoller.start()
@@ -72,7 +72,7 @@ class SymbolsCheckPoller:
 				open("/proc/stb/lcd/symbol_recording", "w").write("1")
 			else:
 				open("/proc/stb/lcd/symbol_recording", "w").write("0")
-		elif getBoxType() in ('ixussone', 'ixusszero', 'wetekplay'):
+		elif getBoxType() in ('ixussone', 'ixusszero', 'wetekplay', 'wetekplayplus'):
 			recordings = len(NavigationInstance.instance.getRecordings(False,Components.RecordingConfig.recType(config.recording.show_rec_symbol_for_rec_types.getValue())))
 			self.blink = not self.blink
 			if recordings > 0:
@@ -84,7 +84,7 @@ class SymbolsCheckPoller:
 					self.led = "0"
 			elif self.led == "1":
 				open("/proc/stb/lcd/powerled", "w").write("0")
-		elif getBoxType() in ('mbmicro'):
+		elif getBoxType() in ('mbmicro', 'e4hd', 'e4hdhybrid'):
 			recordings = len(NavigationInstance.instance.getRecordings(False,Components.RecordingConfig.recType(config.recording.show_rec_symbol_for_rec_types.getValue())))
 			self.blink = not self.blink
 			if recordings > 0:
