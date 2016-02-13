@@ -46,6 +46,7 @@ private:
 	int m_vpid, m_vtype, m_apid, m_atype, m_pcrpid, m_textpid;
 	int m_width, m_height, m_framerate, m_aspect, m_progressive;
 	int aml_fd;	
+	int cntl_fd;
 	enum
 	{
 		changeVideo = 1,

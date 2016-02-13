@@ -2036,9 +2036,9 @@ std::string eDVBServicePlay::getInfoString(int w)
 	case sLiveStreamDemuxId:
 	{
 		eDVBServicePMTHandler &h = m_timeshift_active ? m_service_handler_timeshift : m_service_handler;
-		std::stringstream demux;
-		demux << h.getDemuxID();
-		return demux.str();
+		std::string demux;
+		demux += h.getDemuxID() + '0';
+		return demux;
 	}
 	default:
 		break;
