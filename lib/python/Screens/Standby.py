@@ -6,7 +6,7 @@ from Components.AVSwitch import AVSwitch
 from Components.SystemInfo import SystemInfo
 from Components.Harddisk import harddiskmanager
 from GlobalActions import globalActionMap
-from enigma import eDVBVolumecontrol, eTimer, eServiceReference, pNavigation
+from enigma import eDVBVolumecontrol, eTimer, eDVBLocalTimeHandler, eServiceReference, pNavigation
 from boxbranding import getMachineBrand, getMachineName, getBoxType, getBrandOEM
 from Tools import Notifications
 from time import localtime, time
@@ -85,22 +85,22 @@ class Standby2(Screen):
 			setLCDModeMinitTV("0")
 
 		self.paused_service = None
-		self.prev_running_service = None
-
-		if self.session.current_dialog:
-			if self.session.current_dialog.ALLOW_SUSPEND == Screen.SUSPEND_STOPS:
-				if localtime(time()).tm_year > 1970 and self.session.nav.getCurrentlyPlayingServiceOrGroup():
-					if config.servicelist.startupservice_standby.value:
-						self.prev_running_service = eServiceReference(config.servicelist.startupservice_standby.value)
-					else:
-						self.prev_running_service = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-					self.session.nav.stopService()
+		self.prev_running_service = self.session.nav.getCurrentlyPlayingServiceOrGroup()
+		service = self.prev_running_service and self.prev_running_service.toString()
+		if service:
+			if service.rsplit(":", 1)[1].startswith("/"):
+				self.paused_service = True
+				self.infoBarInstance.pauseService()
+		if not self.paused_service:
+			self.timeHandler =  eDVBLocalTimeHandler.getInstance()
+			if self.timeHandler.ready():
+				if self.session.nav.getCurrentlyPlayingServiceOrGroup():
+					self.stopService()
 				else:
-					self.standbyTimeUnknownTimer.callback.append(self.stopService)
-					self.standbyTimeUnknownTimer.startLongTimer(60)
-			elif self.session.current_dialog.ALLOW_SUSPEND == Screen.SUSPEND_PAUSES:
-				self.paused_service = self.session.current_dialog
-				self.paused_service.pauseService()
+					self.standbyStopServiceTimer.startLongTimer(5)
+				self.timeHandler = None
+			else:
+				self.timeHandler.m_timeUpdated.get().append(self.stopService)
 		if self.session.pipshown:
 			from Screens.InfoBar import InfoBar
 			InfoBar.instance and hasattr(InfoBar.instance, "showPiP") and InfoBar.instance.showPiP()
@@ -198,6 +198,7 @@ class QuitMainloopScreen(Screen):
 			3: _("The user interface of your %s %s is restarting") % (getMachineBrand(), getMachineName()),
 			4: _("Your frontprocessor will be upgraded\nPlease wait until your %s %s reboots\nThis may take a few minutes") % (getMachineBrand(), getMachineName()),
 			5: _("The user interface of your %s %s is restarting\ndue to an error in mytest.py") % (getMachineBrand(), getMachineName()),
+			9: _("The user interface of your %s %s is restarting") % (getMachineBrand(), getMachineName()),
 			42: _("Upgrade in progress\nPlease wait until your %s %s reboots\nThis may take a few minutes") % (getMachineBrand(), getMachineName()),
 			43: _("Reflash in progress\nPlease wait until your %s %s reboots\nThis may take a few minutes") % (getMachineBrand(), getMachineName()),
 			44: _("Your front panel will be upgraded\nThis may take a few minutes"),
@@ -205,6 +206,7 @@ class QuitMainloopScreen(Screen):
 		self["text"] = Label(text)
 
 inTryQuitMainloop = False
+quitMainloopCode = 1
 
 class TryQuitMainloop(MessageBox):
 	def __init__(self, session, retvalue=1, timeout=-1, default_yes = True):
@@ -244,6 +246,7 @@ class TryQuitMainloop(MessageBox):
 				2: _("Really reboot now?"),
 				3: _("Really restart now?"),
 				4: _("Really upgrade the frontprocessor and reboot now?"),
+				9: _("The user interface of your %s %s is restarting") % (getMachineBrand(), getMachineName()),
 				42: _("Really upgrade your %s %s and reboot now?") % (getMachineBrand(), getMachineName()),
 				43: _("Really reflash your %s %s and reboot now?") % (getMachineBrand(), getMachineName()),				
 				44: _("Really upgrade the front panel and reboot now?"),
@@ -277,6 +280,7 @@ class TryQuitMainloop(MessageBox):
 				self.stopTimer()
 
 	def close(self, value):
+		global quitMainloopCode
 		if self.connected:
 			self.connected=False
 			self.session.nav.record_event.remove(self.getRecordEvent)
@@ -288,6 +292,7 @@ class TryQuitMainloop(MessageBox):
 			self.quitScreen = self.session.instantiateDialog(QuitMainloopScreen,retvalue=self.retval)
 			self.quitScreen.show()
 			print "[Standby] quitMainloop #1"
+			quitMainloopCode = self.retval
 			quitMainloop(self.retval)
 		else:
 			MessageBox.close(self, True)
