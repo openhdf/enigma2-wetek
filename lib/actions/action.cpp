@@ -42,17 +42,17 @@ RESULT eActionMap::getInstance(ePtr<eActionMap> &ptr)
 	return 0;
 }
 
-void eActionMap::bindAction(const std::string &context, int priority, int id, eWidget *widget)
+void eActionMap::bindAction(const std::string &context, long long int priority, int id, eWidget *widget)
 {
 	eActionBinding bnd;
 
 	bnd.m_context = context;
 	bnd.m_widget = widget;
 	bnd.m_id = id;
-	m_bindings.insert(std::pair<int,eActionBinding>(priority, bnd));
+	m_bindings.insert(std::pair<int,eActionBinding>(((int)(priority & 0x7FFFFFFF)), bnd));
 }
 
-void eActionMap::bindAction(const std::string &context, int priority, ePyObject function)
+void eActionMap::bindAction(const std::string &context, long long int priority, ePyObject function)
 {
 	eActionBinding bnd;
 
@@ -60,7 +60,7 @@ void eActionMap::bindAction(const std::string &context, int priority, ePyObject 
 	bnd.m_widget = 0;
 	Py_INCREF(function);
 	bnd.m_fnc = function;
-	m_bindings.insert(std::pair<int,eActionBinding>(priority, bnd));
+	m_bindings.insert(std::pair<int,eActionBinding>(((int)(priority & 0x7FFFFFFF)), bnd));
 }
 
 void eActionMap::unbindAction(eWidget *widget, int id)
