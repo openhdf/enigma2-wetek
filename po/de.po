@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: enigma2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-19 23:44+0100\n"
-"PO-Revision-Date: 2016-01-25 12:03+0100\n"
+"PO-Revision-Date: 2016-02-12 19:34+0100\n"
 "Last-Translator: Koivo <koivo@hdfreaks.cc>\n"
 "Language-Team: AndyBlacburn, j-ot&Trial\n"
 "Language: de\n"
@@ -841,12 +841,6 @@ msgstr "3X"
 msgid "3d mode"
 msgstr "3D Betriebsart"
 
-msgid "Mark service as dedicated 3D service"
-msgstr "Als 3D Kanal markieren"
-
-msgid "Unmark service as dedicated 3D service"
-msgstr "3D Markierung entfernen"
-
 msgid "4:3"
 msgstr "4:3"
 
@@ -1303,6 +1297,9 @@ msgstr "Termin hinzufügen..."
 
 msgid "Additional Info"
 msgstr "Zusätzliche Informationen"
+
+msgid "Streaming clients info"
+msgstr "Stream Client Informationen"
 
 msgid "Address"
 msgstr "Adresse"
@@ -4680,6 +4677,16 @@ msgstr "Direkt ausschalten"
 
 msgid "In order to record a timer, the TV was switched to the recording service!\n"
 msgstr "Um die Timeraufnahme durchführen zu können, wurde auf den aufzunehmenden Sender umgeschaltet!\n"
+
+msgid ""
+"In order to record a timer, a tuner was freed successfully:\n"
+"\n"
+msgstr ""
+"Um eine Timer-Aufnahme zu starten, wurde auf einen freien Tuner geschaltet.\n"
+"\n"
+
+msgid "The TV was switched to the recording service!\n"
+msgstr "Es wurde auf den Sender umgeschaltet, auf dem die Aufnahme läuft!\n"
 
 msgid "In progress"
 msgstr "In Bearbeitung"

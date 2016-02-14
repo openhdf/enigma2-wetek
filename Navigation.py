@@ -372,3 +372,6 @@ class Navigation:
 
 	def stopUserServices(self):
 		self.stopService()
+
+	def getClientsStreaming(self):
+		return eStreamServer.getInstance() and eStreamServer.getInstance().getConnectedClients()
