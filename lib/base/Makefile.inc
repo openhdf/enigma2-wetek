@@ -6,9 +6,11 @@ base_libenigma_base_a_SOURCES = \
 	base/cfile.cpp \
 	base/connection.cpp \
 	base/console.cpp \
+	base/condVar.cpp \
 	base/ebase.cpp \
 	base/eenv.cpp \
 	base/eerror.cpp \
+	base/eerroroutput.cpp \
 	base/elock.cpp \
 	base/encoding.cpp \
 	base/estring.cpp \
@@ -34,9 +36,11 @@ baseinclude_HEADERS = \
 	base/cachedtssource.h \
 	base/cfile.h \
 	base/console.h \
+	base/condVar.h \
 	base/ebase.h \
 	base/eenv.h \
 	base/eerror.h \
+	base/eerroroutput.h \
 	base/elock.h \
 	base/encoding.h \
 	base/eptrlist.h \

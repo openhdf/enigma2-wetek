@@ -414,9 +414,9 @@ class Network:
 
 	def checkNetworkState(self,statecallback):
 		self.NetworkState = 0
-		cmd1 = "ping -c 1 www.openpli.org"
-		cmd2 = "ping -c 1 www.google.nl"
-		cmd3 = "ping -c 1 www.google.com"
+		cmd1 = "ping -c 1 www.google.de"
+		cmd2 = "ping -c 1 www.google.com"
+		cmd3 = "ping -c 1 www.google.nl"
 		self.PingConsole = Console()
 		self.PingConsole.ePopen(cmd1, self.checkNetworkStateFinished,statecallback)
 		self.PingConsole.ePopen(cmd2, self.checkNetworkStateFinished,statecallback)
@@ -678,9 +678,8 @@ class Network:
 		return 'wext'
 
 	def calc_netmask(self,nmask):
-		from struct import pack
-		from socket import inet_ntoa
-
+		from struct import pack, unpack
+		from socket import inet_ntoa, inet_aton
 		mask = 1L<<31
 		xnet = (1L<<32)-1
 		cidr_range = range(0, 32)

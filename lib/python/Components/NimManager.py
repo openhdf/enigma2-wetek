@@ -1,4 +1,3 @@
-from boxbranding import getBoxType
 from time import localtime, mktime
 from datetime import datetime
 import xml.etree.cElementTree
@@ -132,7 +131,9 @@ class SecConfigure:
 	def linkNIMs(self, sec, nim1, nim2):
 		print "link tuner", nim1, "to tuner", nim2
 		# for internally connect tuner A to B
-		if getBoxType() == 'vusolo2' or nim2 == (nim1 - 1):
+		if '7356' not in about.getChipSetString() and nim2 == (nim1 - 1):
+			self.linkInternally(nim1)
+		elif '7356' in about.getChipSetString():
 			self.linkInternally(nim1)
 		sec.setTunerLinked(nim1, nim2)
 
@@ -367,8 +368,7 @@ class SecConfigure:
 						position_idx = (posnum - 1) % manufacturer_positions_value
 						if product_name in manufacturer_scr:
 							diction = manufacturer.diction[product_name].value
-							positionsoffset = manufacturer.positionsoffset[product_name][0].value
-							if diction !="EN50607" or ((posnum <= (positionsoffset + manufacturer_positions_value) and (posnum > positionsoffset) and x <= maxFixedLnbPositions)): #for every allowed position
+							if diction !="EN50607" or (posnum <= manufacturer_positions_value and x <= maxFixedLnbPositions): #for every allowed position
 								if diction =="EN50607":
 									sec.setLNBSatCRformat(1)	#JESS
 								else:
@@ -401,7 +401,7 @@ class SecConfigure:
 						sec.setLNBLOFL(currLnb.lofl.value * 1000)
 						sec.setLNBLOFH(currLnb.lofh.value * 1000)
 						sec.setLNBThreshold(currLnb.threshold.value * 1000)
-						sec.setLNBSatCRpositions(64)
+						sec.setLNBSatCRpositions(1)
 					elif currLnb.unicable.value == "unicable_matrix":
 						self.reconstructUnicableDate(currLnb.unicableMatrixManufacturer, currLnb.unicableMatrix, currLnb)
 						setupUnicable(currLnb.unicableMatrixManufacturer, currLnb.unicableMatrix)
@@ -1186,7 +1186,7 @@ class NimManager:
 			slots.append(self.nim_slots[slotid].internallyConnectableTo())
 		for type in self.nim_slots[slotid].connectableTo():
 			for slot in self.getNimListOfType(type, exception = slotid):
-				if self.hasOutputs(slot) and slot not in slots:
+				if self.hasOutputs(slot):
 					slots.append(slot)
 		# remove nims, that have a conntectedTo reference on
 		for testnim in slots[:]:
@@ -1443,7 +1443,7 @@ lscr = ("scr1","scr2","scr3","scr4","scr5","scr6","scr7","scr8","scr9","scr10",
 		"scr21","scr22","scr23","scr24","scr25","scr26","scr27","scr28","scr29","scr30",
 		"scr31","scr32")
 
-def InitNimManager(nimmgr, update_slots = []):
+def InitNimManager(nimmgr):
 	hw = HardwareInfo()
 	addNimConfig = False
 	try:
@@ -1500,9 +1500,6 @@ def InitNimManager(nimmgr, update_slots = []):
 				diction = "EN50494"
 			p_update({"diction":tuple([diction])})								#add diction to dict product
 
-			positionsoffset = product.get("positionsoffset",0)
-			p_update({"positionsoffset":tuple([positionsoffset])})						#add positionsoffset to dict product
-
 			positions=[]
 			positions_append = positions.append
 			positions_append(int(product.get("positions",1)))
@@ -1545,9 +1542,6 @@ def InitNimManager(nimmgr, update_slots = []):
 			else:
 				diction = "EN50494"
 			p_update({"diction":tuple([diction])})								#add diction to dict product
-
-			positionsoffset = product.get("positionsoffset",0)
-			p_update({"positionsoffset":tuple([positionsoffset])})						#add positionsoffset to dict product
 
 			positions=[]
 			positions_append = positions.append
@@ -1660,18 +1654,13 @@ def InitNimManager(nimmgr, update_slots = []):
 						tmp.lofl = ConfigSubDict()
 						tmp.lofh = ConfigSubDict()
 						tmp.loft = ConfigSubDict()
-						tmp.positionsoffset = ConfigSubDict()
 						tmp.positions = ConfigSubDict()
 						tmp.diction = ConfigSubDict()
 						for article in products:
 							positionslist = unicableproducts[manufacturer][article].get("positions")
-							positionsoffsetlist = unicableproducts[manufacturer][article].get("positionsoffset")
-							positionsoffset = int(positionsoffsetlist[0])
 							positions = int(positionslist[0])
 							dictionlist = [unicableproducts[manufacturer][article].get("diction")]
-							if dictionlist[0][0] !="EN50607" or ((lnb > positionsoffset) and (lnb <= (positions + positionsoffset))):
-								tmp.positionsoffset[article] = ConfigSubList()
-								tmp.positionsoffset[article].append(ConfigInteger(default=positionsoffset, limits = (positionsoffset, positionsoffset)))
+							if lnb <= positions or dictionlist[0][0] !="EN50607":
 								tmp.positions[article] = ConfigSubList()
 								tmp.positions[article].append(ConfigInteger(default=positions, limits = (positions, positions)))
 								tmp.diction[article] = ConfigSelection(choices = dictionlist, default = dictionlist[0][0])
@@ -1767,13 +1756,6 @@ def InitNimManager(nimmgr, update_slots = []):
 
 				nim.advanced.unicableconnected = ConfigYesNo(default=False)
 				nim.advanced.unicableconnectedTo = ConfigSelection([(str(id), nimmgr.getNimDescription(id)) for id in nimmgr.getNimListOfType("DVB-S") if id != x])
-				if nim.advanced.unicableconnected.value == True and nim.advanced.unicableconnectedTo.value != nim.advanced.unicableconnectedTo.saved_value:
-					from Tools.Notifications import AddPopup
-					from Screens.MessageBox import MessageBox
-					nim.advanced.unicableconnected.value = False
-					nim.advanced.unicableconnected.save()
-					txt = _("Misconfigured unicable connection from tuner %s to tuner %s!\nTuner %s option \"connected to\" are disabled now") % (chr(int(x) + ord('A')), chr(int(nim.advanced.unicableconnectedTo.saved_value) + ord('A')), chr(int(x) + ord('A')),)
-					AddPopup(txt, type = MessageBox.TYPE_ERROR, timeout = 0, id = "UnicableConnectionFailed")
 
 	def configDiSEqCModeChanged(configElement):
 		section = configElement.section
@@ -2115,9 +2097,6 @@ def InitNimManager(nimmgr, update_slots = []):
 		x = slot.slot
 		nim = config.Nims[x]
 		empty = True
-
-		if update_slots and (x not in update_slots):
-			continue
 
 		if slot.canBeCompatible("DVB-S"):
 			createSatConfig(nim, x, empty_slots)

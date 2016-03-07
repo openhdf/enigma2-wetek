@@ -62,14 +62,11 @@ class Input(VariableText, HTMLComponent, GUIComponent, NumericalTextInput):
 			self.currPos = 0
 			self.Text = u""
 		else:
-			if isinstance(text, str):
-				self.Text = text.decode("utf-8", "ignore")
-			else:
-				self.Text = text
+			self.Text = text.decode("utf-8", "ignore").decode("utf-8")
 		self.update()
 
 	def getText(self):
-		return self.Text.encode('utf-8')
+		return self.Text.encode("utf-8")
 
 	def createWidget(self, parent):
 		if self.allmarked:
@@ -155,8 +152,7 @@ class Input(VariableText, HTMLComponent, GUIComponent, NumericalTextInput):
 		self.update()
 
 	def insertChar(self, ch, pos=False, owr=False, ins=False):
-		if isinstance(ch, str):
-			ch = ch.decode("utf-8","ignore")
+		self.Text = self.Text.decode("utf-8", "ignore").decode("utf-8")
 		if not pos:
 			pos = self.currPos
 		if ins and not self.maxSize:
@@ -172,15 +168,15 @@ class Input(VariableText, HTMLComponent, GUIComponent, NumericalTextInput):
 		if not self.maxSize:
 			self.Text = self.Text[0:pos] + self.Text[pos + 1:]
 		elif self.overwrite:
-			self.Text = self.Text[0:pos] + u" " + self.Text[pos + 1:]
+			self.Text = self.Text[0:pos] + " " + self.Text[pos + 1:]
 		else:
-			self.Text = self.Text[0:pos] + self.Text[pos + 1:] + u" "
+			self.Text = self.Text[0:pos] + self.Text[pos + 1:] + " "
 
 	def deleteAllChars(self):
 		if self.maxSize:
-			self.Text = u" " * len(self.Text)
+			self.Text = " " * len(self.Text)
 		else:
-			self.Text = u""
+			self.Text = ""
 		self.currPos = 0
 
 	def tab(self):
@@ -190,7 +186,7 @@ class Input(VariableText, HTMLComponent, GUIComponent, NumericalTextInput):
 			self.deleteAllChars()
 			self.allmarked = False
 		else:
-			self.insertChar(u" ", self.currPos, False, True)
+			self.insertChar(" ", self.currPos, False, True)
 			self.innerright()
 		self.update()
 

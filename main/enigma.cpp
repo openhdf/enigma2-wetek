@@ -37,6 +37,9 @@
 
 #include <gst/gst.h>
 
+#include <lib/base/eerroroutput.h>
+ePtr<eErrorOutput> m_erroroutput;
+
 #ifdef OBJECT_DEBUG
 int object_total_remaining;
 
@@ -233,6 +236,9 @@ int main(int argc, char **argv)
 		}
 	}
 
+	m_erroroutput = new eErrorOutput();
+	m_erroroutput->run();
+
 	// set pythonpath if unset
 	setenv("PYTHONPATH", eEnv::resolve("${libdir}/enigma2/python").c_str(), 0);
 	printf("PYTHONPATH: %s\n", getenv("PYTHONPATH"));
@@ -312,9 +318,9 @@ int main(int argc, char **argv)
 			}
 		}
 		if (i)
-			my_dc->setSpinner(eRect(ePoint(100, 100), wait[0]->size()), wait, i);
+			my_dc->setSpinner(eRect(ePoint(25, 25), wait[0]->size()), wait, i);
 		else
-			my_dc->setSpinner(eRect(100, 100, 0, 0), wait, 1);
+			my_dc->setSpinner(eRect(25, 25, 0, 0), wait, 1);
 	}
 
 	gRC::getInstance()->setSpinnerDC(my_dc);
@@ -352,7 +358,7 @@ int main(int argc, char **argv)
 		p.clear();
 		p.flush();
 	}
-
+	m_erroroutput = NULL;
 	return exit_code;
 }
 

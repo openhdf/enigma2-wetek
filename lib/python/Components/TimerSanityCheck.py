@@ -1,7 +1,8 @@
-import NavigationInstance
 from time import localtime, mktime, gmtime
-from ServiceReference import ServiceReference
-from enigma import iServiceInformation, eServiceCenter, eServiceReference, getBestPlayableServiceReference
+
+from enigma import iServiceInformation, eServiceCenter, eServiceReference
+
+import NavigationInstance
 from timer import TimerEntry
 
 
@@ -35,7 +36,7 @@ class TimerSanityCheck:
 				if timer == self.newtimer:
 					return True
 				else:
-					if self.newtimer.begin >= timer.begin and self.newtimer.end <= timer.end:
+					if timer.begin == self.newtimer.begin:
 						fl1 = timer.service_ref.ref.flags & eServiceReference.isGroup
 						fl2 = self.newtimer.service_ref.ref.flags & eServiceReference.isGroup
 						if fl1 != fl2:
@@ -173,25 +174,14 @@ class TimerSanityCheck:
 				timer = self.timerlist[event[2]]
 			if event[1] == self.bflag:
 				tunerType = [ ]
-				if timer.service_ref.ref and timer.service_ref.ref.flags & eServiceReference.isGroup:
-					fakeRecService = NavigationInstance.instance.recordService(getBestPlayableServiceReference(timer.service_ref.ref, eServiceReference(), True), True)
-				else:
-					fakeRecService = NavigationInstance.instance.recordService(timer.service_ref, True)
+				fakeRecService = NavigationInstance.instance.recordService(timer.service_ref, True)
 				if fakeRecService:
 					fakeRecResult = fakeRecService.start(True)
 				else:
 					fakeRecResult = -1
-				#print "[TimerSanityCheck] +++", len(NavigationInstance.instance.getRecordings(True)), fakeRecResult
-				if fakeRecResult == -6 and len(NavigationInstance.instance.getRecordings(True)) < 2:
-					print "[TimerSanityCheck] less than two timers in the simulated recording list - timer conflict is not plausible - ignored !"
-					fakeRecResult = 0
 				if not fakeRecResult: # tune okay
-					#feinfo = fakeRecService.frontendInfo()
-					#if feinfo:
-					#	tunerType.append(feinfo.getFrontendData().get("tuner_type"))
-					if hasattr(fakeRecService, 'frontendInfo') and hasattr(fakeRecService.frontendInfo(), 'getFrontendData'):
-						feinfo = fakeRecService.frontendInfo().getFrontendData()
-						tunerType.append(feinfo.get("tuner_type"))
+					feinfo = fakeRecService.frontendInfo().getFrontendData()
+					tunerType.append(feinfo.get("tuner_type"))
 				else: # tune failed.. so we must go another way to get service type (DVB-S, DVB-T, DVB-C)
 
 					def getServiceType(ref): # helper function to get a service type of a service reference

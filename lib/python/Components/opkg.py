@@ -1,5 +1,4 @@
 import os
-from boxbranding import getImageVersion
 
 def enumFeeds():
 	for fn in os.listdir('/etc/opkg'):
@@ -19,13 +18,13 @@ def enumPlugins(filter_start=''):
 	for feed in enumFeeds():
 		package = None
 		try:
-			file = open(os.path.join(listsDirPath(), feed), 'r')
+			file = open('/var/lib/opkg/lists/%s' % feed, 'r')
 			for line in file:
 				if line.startswith('Package:'):
 					package = line.split(":",1)[1].strip()
 					version = ''
 					description = ''
-					if package.startswith(filter_start) and not package.endswith('-dev') and not package.endswith('-staticdev') and not package.endswith('-dbg') and not package.endswith('-doc') and not package.endswith('-src'):
+					if package.startswith(filter_start) and not package.endswith('-dev') and not package.endswith('-staticdev') and not package.endswith('-dbg') and not package.endswith('-doc'):
 						continue
 					package = None
 				if package is None:
@@ -49,15 +48,6 @@ def enumPlugins(filter_start=''):
 			file.close()
 		except IOError:
 			pass
-
-def listsDirPath():
-	try:
-		for line in open('/etc/opkg/opkg.conf', "r"):
-			if line.startswith('lists_dir'):
-				return line.replace('\n','').split(' ')[2]
-	except IOError:
-		print "[opkg] cannot open %s" % path
-	return '/var/lib/opkg'
 
 if __name__ == '__main__':
 	for p in enumPlugins('enigma'):

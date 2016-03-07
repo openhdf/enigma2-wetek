@@ -1349,13 +1349,11 @@ class EPGList(HTMLComponent, GUIComponent):
 
 	def getEventRect(self):
 		rc = self.event_rect
-		if rc:
-			return Rect( rc.left() + (self.instance and self.instance.position().x() or 0), rc.top(), rc.width(), rc.height() )
+		return Rect( rc.left() + (self.instance and self.instance.position().x() or 0), rc.top(), rc.width(), rc.height() )
 
 	def getServiceRect(self):
 		rc = self.service_rect
-		if rc:
-			return Rect( rc.left() + (self.instance and self.instance.position().x() or 0), rc.top(), rc.width(), rc.height() )
+		return Rect( rc.left() + (self.instance and self.instance.position().x() or 0), rc.top(), rc.width(), rc.height() )
 
 	def getTimeEpoch(self):
 		return self.time_epoch
