@@ -10,7 +10,7 @@ WORKDIR = "${S}/build"
 
 PV = "2.7+git"
 PKGV = "2.7+git${GITPKGV}"
-PR = "r28"
+PR = "r29"
 
 FILES_${PN} += "${datadir}/keymaps"
 FILES_${PN}-meta = "${datadir}/meta"
@@ -34,6 +34,20 @@ e2_copy_aclocal () {
 
 EXTRACONFFUNCS += "e2_copy_aclocal"
 
+ACLOCALDIR = "${B}/aclocal-copy"
+e2_copy_aclocal () {
+	rm -rf ${ACLOCALDIR}/
+	mkdir -p ${ACLOCALDIR}/
+	if [ -d ${STAGING_DATADIR_NATIVE}/aclocal ]; then
+		cp-noerror ${STAGING_DATADIR_NATIVE}/aclocal/ ${ACLOCALDIR}/
+	fi
+	if [ -d ${STAGING_DATADIR}/aclocal -a "${STAGING_DATADIR_NATIVE}/aclocal" != "${STAGING_DATADIR}/aclocal" ]; then
+		cp-noerror ${STAGING_DATADIR}/aclocal/ ${ACLOCALDIR}/
+	fi
+}
+
+EXTRACONFFUNCS += "e2_copy_aclocal"
+
 bindir = "/usr/bin"
 sbindir = "/usr/sbin"
 
@@ -48,6 +62,7 @@ EXTRA_OECONF = "\
 	STAGING_LIBDIR=${STAGING_LIBDIR} \
 	"
 
+LDFLAGS_prepend = "${@base_contains('GST_VERSION', '1.0', ' -lxml2 ', '', d)}"
 do_install_append() {
 	install -d ${D}/usr/share/keymaps
 }

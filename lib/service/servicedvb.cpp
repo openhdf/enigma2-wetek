@@ -2036,9 +2036,9 @@ std::string eDVBServicePlay::getInfoString(int w)
 	case sLiveStreamDemuxId:
 	{
 		eDVBServicePMTHandler &h = m_timeshift_active ? m_service_handler_timeshift : m_service_handler;
-		std::stringstream demux;
-		demux << h.getDemuxID();
-		return demux.str();
+		std::string demux;
+		demux += h.getDemuxID() + '0';
+		return demux;
 	}
 	default:
 		break;
@@ -2124,6 +2124,8 @@ RESULT eDVBServicePlay::getTrackInfo(struct iAudioTrackInfo &info, unsigned int 
 		info.m_description = "DTS";
 	else  if (program.audioStreams[i].type == eDVBServicePMTHandler::audioStream::atDTSHD)
 		info.m_description = "DTS-HD";
+	else  if (program.audioStreams[i].type == eDVBServicePMTHandler::audioStream::atLPCM)
+		info.m_description = "LPCM";
 	else
 		info.m_description = "???";
 

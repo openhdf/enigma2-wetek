@@ -162,7 +162,7 @@ class eDVBResourceManager: public iObject, public Object
 	DECLARE_REF(eDVBResourceManager);
 	int avail, busy;
 
-	enum { DM7025, DM800, DM500HD, DM800SE, DM8000, DM7020HD, DM7080, DM820, GIGABLUE, DM500HDV2, DM800SEV2, WETEKPLAY};
+	enum { DM7025, DM800, DM500HD, DM800SE, DM8000, DM7020HD, DM7080, DM820, GIGABLUE, DM500HDV2, DM800SEV2, WETEKPLAY, WETEKPLAYPLUS};
 
 	int m_boxtype;
 
@@ -247,6 +247,8 @@ public:
 	SWIG_VOID(RESULT) allocateRawChannel(eUsePtr<iDVBChannel> &SWIG_OUTPUT, int slot_index);
 	PyObject *setFrontendSlotInformations(SWIG_PYOBJECT(ePyObject) list);
 	bool frontendIsCompatible(int index, const char *type);
+	bool frontendIsMultistream(int index);
+	std::string getFrontendCapabilities(int index);
 	void setFrontendType(int index, const char *type);
 };
 SWIG_TEMPLATE_TYPEDEF(ePtr<eDVBResourceManager>, eDVBResourceManager);
