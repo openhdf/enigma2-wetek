@@ -88,7 +88,7 @@ private:
 	void *adec_handle;
 
 public:
-	enum { aMPEG, aAC3, aDTS, aAAC, aAACHE, aLPCM, aDTSHD, aDDP, MPEG2 = 0, MPEG4_H264, MPEG1, MPEG4_Part2, VC1, VC1_SM };
+	enum { aMPEG, aAC3, aDTS, aAAC, aAACHE, aLPCM, aDTSHD, aDDP, MPEG2 = 0, MPEG4_H264, MPEG1, MPEG4_Part2, VC1, VC1_SM, H265_HEVC };
 	enum { pidNone = -1 };
 	eAMLTSMPEGDecoder(eDVBDemux *demux, int decoder);
 	virtual ~eAMLTSMPEGDecoder();
